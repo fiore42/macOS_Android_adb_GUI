@@ -105,7 +105,11 @@ struct ContentView: View {
     func loadMacFiles() {
         let path = ConfigManager.shared.macStartPath
         do {
-            macFiles = try FileManager.default.contentsOfDirectory(atPath: path)
+            var files = try FileManager.default.contentsOfDirectory(atPath: path)
+            if path != "/" {
+                files.insert("..", at: 0)
+            }
+            macFiles = files
         } catch {
             errorMessage = "Failed to load Mac files from \(path): \(error.localizedDescription)"
         }
