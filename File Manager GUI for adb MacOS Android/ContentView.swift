@@ -147,8 +147,8 @@ struct ContentView: View {
     }
 
     func loadAndroidFiles() {
-        androidFiles = []  // Blank out immediately
-        showingAndroidFileList = false  // Hide list to force refresh visual
+        androidFiles = []
+        showingAndroidFileList = false
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
@@ -156,6 +156,10 @@ struct ContentView: View {
                 androidFiles = output.components(separatedBy: "\n")
                     .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                     .filter { !$0.isEmpty }
+                    .map { line in
+                        let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
+                        return parts.count == 4 ? String(parts[3]) : line
+                    }
                 showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
