@@ -18,8 +18,9 @@ class LanguageManager: ObservableObject {
     }
 
     func loadLanguage(code: String) {
-        let languageFile = executableDirectory().appendingPathComponent("languages/\(code).json")
+        let languageFile = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("languages/\(code).json")
 
+        
         guard FileManager.default.fileExists(atPath: languageFile.path) else {
             fatalError("Language file \(languageFile.path) not found. Please ensure it exists.")
         }
