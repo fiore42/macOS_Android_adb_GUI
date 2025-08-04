@@ -140,16 +140,17 @@ struct ContentView: View {
         }
     }
 
-
-    
     func loadAndroidFiles() {
         do {
             let output = try runADBCommand(arguments: ["ls", "/sdcard"])
-            androidFiles = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+            androidFiles = output.components(separatedBy: "\n")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
+    
 
     func copyToAndroid() {
         let macPath = ConfigManager.shared.macStartPath
