@@ -147,14 +147,19 @@ struct ContentView: View {
     }
 
     func loadAndroidFiles() {
-        do {
-            let output = try runADBCommand(arguments: ["ls", "/sdcard"])
-            androidFiles = output.components(separatedBy: "\n")
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
-            showingAndroidFileList = true
-        } catch {
-            errorMessage = error.localizedDescription
+        androidFiles = []  // Blank out immediately
+        showingAndroidFileList = false  // Hide list to force refresh visual
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            do {
+                let output = try runADBCommand(arguments: ["ls", "/sdcard"])
+                androidFiles = output.components(separatedBy: "\n")
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
+                showingAndroidFileList = true
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
     
