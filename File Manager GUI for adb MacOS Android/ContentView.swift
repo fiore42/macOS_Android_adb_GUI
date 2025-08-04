@@ -10,7 +10,8 @@ import Foundation
 
 struct ContentView: View {
     @State private var currentMacPath = ConfigManager.shared.macStartPath
-    @State private var macFiles: [String] = []
+//    @State private var macFiles: [String] = []
+    @State private var macFiles: [FileEntry] = []
     @State private var androidFiles: [String] = []
     @State private var selectedMacFiles = Set<String>()
     @State private var selectedAndroidFiles = Set<String>()
@@ -32,10 +33,10 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                     List(selection: $selectedMacFiles) {
-                        ForEach(macFiles, id: \.self) { file in
+                        ForEach(macFiles) { file in
                             HStack {
-                                Image(systemName: isMacFolder(fileName: file) ? "folder" : "doc.text")
-                                Text(file)
+                                Image(systemName: file.isFolder ? "folder" : "doc.text")
+                                Text(file.name)
                             }
                         }
                     }
@@ -129,9 +130,10 @@ struct ContentView: View {
             if currentMacPath != "/" {
                 files.insert("..", at: 0)
             }
-            macFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
-                return isMacFolder(fileName: fileName)
+            let entries = files.map { fileName in
+                FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
             }
+            macFiles = entries
         } catch {
             errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
