@@ -34,13 +34,33 @@ struct ContentView: View {
                         .multilineTextAlignment(.center)
                     List(selection: $selectedMacFiles) {
                         ForEach(macFiles) { file in
-                            HStack {
-                                Image(systemName: file.isFolder ? "folder" : "doc.text")
-                                Text(file.name)
+                            FileRowView(file: file) {
+                                if file.isSpecialAction {
+                                    loadMacFiles()
+                                    selectedMacFiles.remove(file.id)
+                                } else if file.name == ".." {
+                                    navigateMacFolder(to: file)
+                                    selectedMacFiles.remove(file.id)
+                                }
                             }
-                            .contentShape(Rectangle()) // Make entire row selectable
-
                         }
+
+//                        ForEach(macFiles) { file in
+//                            HStack {
+//                                Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
+//                                Text(file.name)
+//                            }
+//                            .contentShape(Rectangle()) // Make entire row selectable
+//                            .onTapGesture {
+//                                if file.isSpecialAction {
+//                                    loadMacFiles()
+//                                    selectedMacFiles.remove(file.id)  // Deselect Refresh immediately
+//                                } else if file.name == ".." {
+//                                    navigateMacFolder(to: file.name)
+//                                    selectedMacFiles.remove(file.id)  // Deselect ".." immediately
+//                                }
+//                            }
+//                        }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
@@ -63,13 +83,34 @@ struct ContentView: View {
                     } else {
                         List(selection: $selectedAndroidFiles) {
                             ForEach(androidFiles) { file in
-                                HStack {
-                                    Image(systemName: file.isFolder ? "folder" : "doc.text")
-                                    Text(file.name)
+                                FileRowView(file: file) {
+                                    if file.isSpecialAction {
+                                        loadAndroidFiles()
+                                        selectedAndroidFiles.remove(file.id)
+                                    } else if file.name == ".." {
+                                        navigateAndroidFolder(to: file)
+                                        selectedAndroidFiles.remove(file.id)
+                                    }
                                 }
-                                .contentShape(Rectangle()) // Make entire row selectable
-
                             }
+
+//                            ForEach(androidFiles) { file in
+//                                HStack {
+//                                    Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
+//                                    Text(file.name)
+//                                }
+//                                .contentShape(Rectangle()) // Make entire row selectable
+//                                .onTapGesture {
+//                                    if file.isSpecialAction {
+//                                        loadAndroidFiles()
+//                                        selectedAndroidFiles.remove(file.id)
+//                                    } else if file.name == ".." {
+//                                        navigateAndroidFolder(to: file.name)
+//                                        selectedAndroidFiles.remove(file.id)
+//                                    }
+//                                }
+//
+//                            }
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
@@ -111,7 +152,30 @@ struct ContentView: View {
         .onAppear(perform: loadMacFiles)
     }
 
+    struct FileRowView: View {
+        let file: FileEntry
+        let onTap: () -> Void
 
+        var body: some View {
+            HStack {
+                Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
+                Text(file.name)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onTap()
+            }
+        }
+    }
+
+    
+    func navigateMacFolder(to file: FileEntry) {
+        // Will implement navigation logic later
+    }
+
+    func navigateAndroidFolder(to file: FileEntry) {
+        // Will implement navigation logic later
+    }
 
     func isMacFolder(fileName: String) -> Bool {
         if fileName == ".." { return true }  // Always treat ".." as folder
@@ -237,8 +301,9 @@ struct ContentView: View {
 
     func copyToAndroid() {
         let macPath = ConfigManager.shared.macStartPath
+
         for fileID in selectedMacFiles {
-            if let file = macFiles.first(where: { $0.id == fileID }) {
+            if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
                 let sourcePath = macPath + "/" + file.name
                 let destinationPath = "/sdcard/" + file.name
                 do {
@@ -252,10 +317,12 @@ struct ContentView: View {
     }
 
 
+
     func copyToMac() {
         let macPath = ConfigManager.shared.macStartPath
+
         for fileID in selectedAndroidFiles {
-            if let file = androidFiles.first(where: { $0.id == fileID }) {
+            if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
                 let sourcePath = "/sdcard/" + file.name
                 let destinationPath = macPath + "/" + file.name
                 do {
@@ -267,6 +334,7 @@ struct ContentView: View {
             }
         }
     }
+
 
 
 }
