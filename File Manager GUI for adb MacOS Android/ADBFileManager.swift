@@ -8,36 +8,6 @@
 import SwiftUI
 import Foundation
 
-// ConfigManager remains the same
-class ConfigManager: ObservableObject {
-    static let shared = ConfigManager()
-    
-    @Published var adbPath: String = "/usr/local/bin/adb"
-    @Published var macStartPath: String = FileManager.default.homeDirectoryForCurrentUser.path
-
-    init() {
-        loadConfig()
-    }
-
-    func loadConfig() {
-        let configURL = executableDirectory().appendingPathComponent("config.json")
-        do {
-            let data = try Data(contentsOf: configURL)
-            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                if let path = json["adb_path"] as? String {
-                    adbPath = path
-                }
-                if let startPath = json["mac_start_path"] as? String {
-                    macStartPath = startPath
-                }
-            }
-        } catch {
-            print("Failed to load config.json: \(error.localizedDescription)")
-        }
-    }
-}
-
-// ADB Runner remains the same
 func runADBCommand(arguments: [String]) throws -> String {
     let adbPath = ConfigManager.shared.adbPath
     let adbURL = URL(fileURLWithPath: adbPath)

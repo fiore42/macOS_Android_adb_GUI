@@ -5,9 +5,40 @@
 //  Created by Alfonso Fiore on 4/8/25.
 //
 
-
 import SwiftUI
 import Foundation
+
+class ConfigManager: ObservableObject {
+    static let shared = ConfigManager()
+    
+    @Published var adbPath: String = "/usr/local/bin/adb"
+    @Published var macStartPath: String = FileManager.default.homeDirectoryForCurrentUser.path
+    @Published var defaultLanguage: String = "en"
+
+    init() {
+        loadConfig()
+    }
+
+    func loadConfig() {
+        let configURL = executableDirectory().appendingPathComponent("config.json")
+        do {
+            let data = try Data(contentsOf: configURL)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let path = json["adb_path"] as? String {
+                    adbPath = path
+                }
+                if let startPath = json["mac_start_path"] as? String {
+                    macStartPath = startPath
+                }
+                if let language = json["default_language"] as? String {
+                    defaultLanguage = language
+                }
+            }
+        } catch {
+            print("Failed to load config.json: \(error.localizedDescription)")
+        }
+    }
+}
 
 func executableDirectory() -> URL {
     let path = Bundle.main.executableURL?.deletingLastPathComponent()
