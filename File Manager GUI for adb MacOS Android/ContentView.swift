@@ -10,6 +10,8 @@ import Foundation
 
 struct ContentView: View {
     @State private var currentMacPath = ConfigManager.shared.macStartPath
+    @State private var currentAndroidPath: String = "/sdcard"
+    @State private var androidRootAliases: [String] = ["/sdcard"]
     @State private var macFiles: [FileEntry] = []
     @State private var androidFiles: [FileEntry] = []
     @State private var selectedMacFiles = Set<String>()
@@ -21,7 +23,6 @@ struct ContentView: View {
     @State private var adbDevicesOutput: String = ""
     @State private var buttonsEnabled = false
     @State private var showingAndroidFileList = false
-
 
     var body: some View {
         VStack {
@@ -151,6 +152,9 @@ struct ContentView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
                 let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
+                if !androidRootAliases.contains(resolvedPath) {
+                    androidRootAliases.append(resolvedPath)
+                }
                 print("Resolved Android Path: \(resolvedPath)")
 
                 let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
@@ -166,7 +170,8 @@ struct ContentView: View {
                     entries.append(FileEntry(name: String(fileName), isFolder: isDir))
                 }
 
-                if resolvedPath != "/sdcard" {
+                let isAtRootAlias = androidRootAliases.contains(resolvedPath)
+                if !isAtRootAlias {
                     entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
                 }
 
