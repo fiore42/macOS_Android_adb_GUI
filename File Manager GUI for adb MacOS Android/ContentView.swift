@@ -124,7 +124,7 @@ struct ContentView: View {
                             onFocusChange()  // Ensure tap on checkbox focuses pane
                         }
                 } else {
-                    Spacer().frame(width: 20) // Empty space instead of checkbox
+                    Spacer().frame(width: 22) // Empty space instead of checkbox
                 }
                 Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
                 Text(file.name)
