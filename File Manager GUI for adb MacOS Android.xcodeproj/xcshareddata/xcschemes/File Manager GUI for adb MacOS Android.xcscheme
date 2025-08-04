@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1640"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES"
+      buildArchitectures = "Automatic">
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "# Type a script or drag a script file from your workspace to insert its path.&#10;&#10;#!/bin/bash&#10;&#10;# Ensure working directory is set to the project root&#10;cd &quot;$PROJECT_DIR&quot; || exit 1&#10;&#10;LOG_FILE=&quot;$PROJECT_DIR/build_auto_commit.log&quot;&#10;&#10;{&#10;    echo &quot;------ Build Auto-Commit Log ------&quot;&#10;    echo &quot;Timestamp: $(date)&quot;&#10;    echo &quot;Branch: $(git rev-parse --abbrev-ref HEAD)&quot;&#10;    echo &quot;Changes:&quot;&#10;    git status -s&#10;&#10;    # Stage all changes&#10;    git add .&#10;&#10;    # Try committing&#10;    if git commit -m &quot;Auto-commit after successful build at $(date +&quot;%Y-%m-%d %H:%M:%S&quot;)&quot;; then&#10;        echo &quot;&#x2705; Commit successful.&quot;&#10;    else&#10;        echo &quot;&#x26a0;&#xfe0f; Nothing to commit or commit failed.&quot;&#10;    fi&#10;&#10;    # Optional: Push to GitHub&#10;    git push origin main&#10;&#10;    echo &quot;------ End of Auto-Commit ------&quot;&#10;} &gt;&gt; &quot;$LOG_FILE&quot; 2&gt;&amp;1&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "05D06ABB2E406E2800E432B7"
+                     BuildableName = "File Manager GUI for adb MacOS Android.app"
+                     BlueprintName = "File Manager GUI for adb MacOS Android"
+                     ReferencedContainer = "container:File Manager GUI for adb MacOS Android.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "05D06ABB2E406E2800E432B7"
+               BuildableName = "File Manager GUI for adb MacOS Android.app"
+               BlueprintName = "File Manager GUI for adb MacOS Android"
+               ReferencedContainer = "container:File Manager GUI for adb MacOS Android.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "05D06ABB2E406E2800E432B7"
+            BuildableName = "File Manager GUI for adb MacOS Android.app"
+            BlueprintName = "File Manager GUI for adb MacOS Android"
+            ReferencedContainer = "container:File Manager GUI for adb MacOS Android.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "05D06ABB2E406E2800E432B7"
+            BuildableName = "File Manager GUI for adb MacOS Android.app"
+            BlueprintName = "File Manager GUI for adb MacOS Android"
+            ReferencedContainer = "container:File Manager GUI for adb MacOS Android.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

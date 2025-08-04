@@ -1,0 +1,49 @@
+# macOS System Files
+.DS_Store
+
+# Xcode User Data
+*.xcuserdata
+*.xcuserstate
+
+# Xcode Derived Data & Build Artifacts
+DerivedData/
+build/
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Xcode Workspace
+xcshareddata/WorkspaceSettings.xcsettings
+
+# Logs and Index
+*.xccheckout
+*.xcscmblueprint
+
+# Other User Settings
+*.swp
+*.lock
+*.tmp
+
+# Application Archives
+*.xcarchive
+
+# Personal Configuration
+*.local.xcconfig
+
+# Ignore Pods (if you use CocoaPods in future)
+Pods/
+
+# Ignore Carthage Build Folder
+Carthage/Build/
+
+# Ignore Fastlane files (if used in future)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+
+# Ignore custom config or secrets if needed
+# config.json (if you want to exclude local-specific configs)
+
+# Auto-commit build log
+build_auto_commit.log
