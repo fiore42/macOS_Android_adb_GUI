@@ -175,6 +175,7 @@ struct ContentView: View {
                 let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
 
                 for line in lines {
+                    if line.starts(with: "total") { continue }  // Skip summary line
                     let tokens = line.split(separator: " ", omittingEmptySubsequences: true)
                     guard let fileName = tokens.last else { continue }
                     let isDir = tokens[0].starts(with: "d")
