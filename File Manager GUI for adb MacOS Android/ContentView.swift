@@ -18,6 +18,8 @@ struct ContentView: View {
     @State private var commitLogContent: String = ""
     @State private var showingADBDevicesOutput = false
     @State private var adbDevicesOutput: String = ""
+    @State private var buttonsEnabled = false
+
 
     var body: some View {
         VStack {
@@ -68,12 +70,18 @@ struct ContentView: View {
                 Button(LanguageManager.shared.localized("load_android_files_button")) {
                     loadAndroidFiles()
                 }
+                .disabled(!buttonsEnabled)
+
                 Button(LanguageManager.shared.localized("copy_to_android_button")) {
                     copyToAndroid()
                 }
+                .disabled(!buttonsEnabled)
+
                 Button(LanguageManager.shared.localized("copy_to_mac_button")) {
                     copyToMac()
                 }
+                .disabled(!buttonsEnabled)
+
             }
 
             // Error Message
@@ -109,19 +117,25 @@ struct ContentView: View {
 
             if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
                 adbDevicesOutput = LanguageManager.shared.localized("no_device_found")
+                buttonsEnabled = false
             } else if authorizedDevices.count > 1 {
                 adbDevicesOutput = LanguageManager.shared.localized("multiple_authorized_devices")
+                buttonsEnabled = false
             } else if authorizedDevices.count == 1 {
                 adbDevicesOutput = LanguageManager.shared.localized("ok_ready_to_copy")
+                buttonsEnabled = true
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
                 adbDevicesOutput = LanguageManager.shared.localized("no_authorized_device_found")
+                buttonsEnabled = false
             }
             showingADBDevicesOutput = true
         } catch {
             adbDevicesOutput = "ADB Error: \(error.localizedDescription)"
             showingADBDevicesOutput = true
+            buttonsEnabled = false
         }
     }
+
 
     
     func loadAndroidFiles() {

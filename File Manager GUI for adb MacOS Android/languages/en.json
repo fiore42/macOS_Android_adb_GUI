@@ -7,7 +7,7 @@
     "show_config_variables_button": "Show Config Variables",
     "language_button": "Language",
     "build_auto_commit_log_title": "Build Auto-Commit Log",
-    "adb_devices_button": "ADB Devices",
+    "adb_devices_button": "adb devices",
     "no_device_found": "NO device found",
     "no_authorized_device_found": "NO authorized device found",
     "ok_ready_to_copy": "OK! Ready to copy",
