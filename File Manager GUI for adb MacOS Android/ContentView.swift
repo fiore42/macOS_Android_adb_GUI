@@ -9,8 +9,8 @@ import SwiftUI
 import Foundation
 
 struct ContentView: View {
-    @State private var macFiles: [String] = []
     @State private var currentMacPath = ConfigManager.shared.macStartPath
+    @State private var macFiles: [String] = []
     @State private var androidFiles: [String] = []
     @State private var selectedMacFiles = Set<String>()
     @State private var selectedAndroidFiles = Set<String>()
@@ -37,11 +37,6 @@ struct ContentView: View {
                                 Image(systemName: isFolder(fileName: file) ? "folder" : "doc.text")
                                 Text(file)
                             }
-                            //                            .onTapGesture(count: 2) {
-                            //                                if isFolder(fileName: file) || file == ".." {
-                            //                                    navigateMacFolder(to: file)
-                            //                                }
-                            //                            }
                         }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -124,7 +119,9 @@ struct ContentView: View {
             if currentMacPath != "/" {
                 files.insert("..", at: 0)
             }
-            macFiles = files
+            macFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
+                return isFolder(fileName: fileName)
+            }
         } catch {
             errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
