@@ -27,6 +27,8 @@ struct ContentView: View {
                 // Left Pane - Mac Files
                 VStack(alignment: .leading) {
                     Text(LanguageManager.shared.localized("mac_files_label"))
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
                     List(selection: $selectedMacFiles) {
                         ForEach(macFiles, id: \.self) { file in
                             Text(file)
@@ -40,6 +42,8 @@ struct ContentView: View {
                 // Right Pane - Android Files or ADB Devices Output
                 VStack(alignment: .leading) {
                     Text(LanguageManager.shared.localized("android_files_label"))
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
                     if showingADBDevicesOutput {
                         ScrollView([.vertical, .horizontal]) {
                             Text(adbDevicesOutput)
