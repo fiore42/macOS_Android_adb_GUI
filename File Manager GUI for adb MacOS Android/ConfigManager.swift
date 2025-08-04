@@ -20,8 +20,8 @@ class ConfigManager: ObservableObject {
     }
 
     func loadConfig() {
-        let configURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("config.json")
-
+        let configURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("config.json")        
+        
         do {
             let data = try Data(contentsOf: configURL)
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
