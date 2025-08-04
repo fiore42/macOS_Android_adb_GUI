@@ -29,7 +29,13 @@ class ConfigManager: ObservableObject {
                     adbPath = path
                 }
                 if let startPath = json["mac_start_path"] as? String {
-                    macStartPath = startPath
+                    if startPath.hasPrefix("~") {
+                        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+                        let relativePath = String(startPath.dropFirst()) // Remove ~
+                        macStartPath = homeDir + relativePath
+                    } else {
+                        macStartPath = startPath
+                    }
                 }
                 if let language = json["default_language"] as? String {
                     defaultLanguage = language

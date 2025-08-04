@@ -1,0 +1,5 @@
+{
+    "adb_path": "/opt/homebrew/bin/adb",
+    "mac_start_path": "~/Downloads",
+    "default_language": "en"
+}
