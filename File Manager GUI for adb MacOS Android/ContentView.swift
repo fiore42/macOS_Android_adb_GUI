@@ -12,7 +12,8 @@ struct ContentView: View {
     @State private var currentMacPath = ConfigManager.shared.macStartPath
 //    @State private var macFiles: [String] = []
     @State private var macFiles: [FileEntry] = []
-    @State private var androidFiles: [String] = []
+//    @State private var androidFiles: [String] = []
+    @State private var androidFiles: [FileEntry] = []
     @State private var selectedMacFiles = Set<String>()
     @State private var selectedAndroidFiles = Set<String>()
     @State private var errorMessage: String?
@@ -60,12 +61,19 @@ struct ContentView: View {
                         .clipped()
                     } else {
                         List(selection: $selectedAndroidFiles) {
-                            ForEach(androidFiles, id: \.self) { file in
+                            ForEach(androidFiles) { file in
                                 HStack {
-                                    Image(systemName: isAndroidFolder(fileName: file) ? "folder" : "doc.text")
-                                    Text(file)
+                                    Image(systemName: file.isFolder ? "folder" : "doc.text")
+                                    Text(file.name)
                                 }
                             }
+
+//                            ForEach(androidFiles, id: \.self) { file in
+//                                HStack {
+//                                    Image(systemName: isAndroidFolder(fileName: file) ? "folder" : "doc.text")
+//                                    Text(file)
+//                                }
+//                            }
 
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -117,12 +125,12 @@ struct ContentView: View {
         FileManager.default.fileExists(atPath: fullPath, isDirectory: &isDir)
         return isDir.boolValue
     }
-    
-    func isAndroidFolder(fileName: String) -> Bool {
-        // Naive check for now: if name doesn't contain '.' it's probably a folder (adjust later)
-        if fileName == ".." { return true }
-        return !fileName.contains(".")
-    }
+//    
+//    func isAndroidFolder(fileName: String) -> Bool {
+//        // Naive check for now: if name doesn't contain '.' it's probably a folder (adjust later)
+//        if fileName == ".." { return true }
+//        return !fileName.contains(".")
+//    }
     
     func loadMacFiles() {
         do {
@@ -139,35 +147,83 @@ struct ContentView: View {
         }
     }
     
+    func resolveAndroidPath(initialPath: String) throws -> String {
+        var currentPath = initialPath
+        while true {
+            let output = try runADBCommand(arguments: ["shell", "readlink", "-f", currentPath]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if output.isEmpty || output == currentPath {
+                return currentPath
+            } else {
+                currentPath = output
+            }
+        }
+    }
+
+
     func loadAndroidFiles() {
         androidFiles = []
         showingAndroidFileList = false
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
-                let currentPath = "/sdcard"  // <-- Later, you can make this dynamic when navigating
-                let output = try runADBCommand(arguments: ["ls", currentPath])
-                var files = output.components(separatedBy: "\n")
-                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                    .filter { !$0.isEmpty }
-                    .map { line in
-                        let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
-                        return parts.count == 4 ? String(parts[3]) : line
-                    }
+                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
+                print("Resolved Android Path: \(resolvedPath)")
 
-                if currentPath != "/sdcard" {
-                    files.insert("..", at: 0)
+                let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
+                var entries: [FileEntry] = []
+
+                let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
+
+                for line in lines {
+                    let tokens = line.split(separator: " ", omittingEmptySubsequences: true)
+                    guard tokens.count >= 9 else { continue }
+                    let fileName = tokens[8]
+                    let isDir = tokens[0].starts(with: "d")
+                    entries.append(FileEntry(name: String(fileName), isFolder: isDir))
                 }
 
-                androidFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
-                    return isAndroidFolder(fileName: fileName)
+                if resolvedPath != "/sdcard" {
+                    entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
                 }
+
+                androidFiles = entries.sortedWithFoldersFirst()
                 showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
     }
+
+    
+//    func loadAndroidFiles() {
+//        androidFiles = []
+//        showingAndroidFileList = false
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+//            do {
+//                let currentPath = "/sdcard"  // <-- Later, you can make this dynamic when navigating
+//                let output = try runADBCommand(arguments: ["ls", currentPath])
+//                var files = output.components(separatedBy: "\n")
+//                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+//                    .filter { !$0.isEmpty }
+//                    .map { line in
+//                        let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
+//                        return parts.count == 4 ? String(parts[3]) : line
+//                    }
+//
+//                if currentPath != "/sdcard" {
+//                    files.insert("..", at: 0)
+//                }
+//
+//                androidFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
+//                    return isAndroidFolder(fileName: fileName)
+//                }
+//                showingAndroidFileList = true
+//            } catch {
+//                errorMessage = error.localizedDescription
+//            }
+//        }
+//    }
 
     func checkADBDevices() {
         do {
