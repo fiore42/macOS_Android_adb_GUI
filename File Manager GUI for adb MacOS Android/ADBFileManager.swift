@@ -27,6 +27,7 @@ func runADBCommand(arguments: [String]) throws -> String {
     process.standardError = pipe
 
     do {
+        print("Running command: \(adbPath) \(arguments.joined(separator: " "))")
         try process.run()
     } catch {
         throw NSError(domain: "ADBError", code: 2, userInfo: [
