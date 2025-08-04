@@ -32,39 +32,75 @@ struct ContentView: View {
                     Text(LanguageManager.shared.localized("mac_files_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
+
+                    Button(action: loadMacFiles) {
+                        HStack {
+                            Image(systemName: "arrow.clockwise")
+                            Text("[ Refresh ]")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(4)
+                    }
+                    .buttonStyle(PlainButtonStyle())  // No default button look
+
+                    if currentMacPath != "/" {
+                        Button(action: {
+                            navigateMacFolder(to: FileEntry(name: "..", isFolder: true))
+                        }) {
+                            HStack {
+                                Image(systemName: "folder")
+                                Text("..")
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(4)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+
                     List(selection: $selectedMacFiles) {
                         ForEach(macFiles) { file in
-                            FileRowView(file: file) {
-                                if file.isSpecialAction {
-                                    loadMacFiles()
-                                    selectedMacFiles.remove(file.id)
-                                } else if file.name == ".." {
-                                    navigateMacFolder(to: file)
-                                    selectedMacFiles.remove(file.id)
-                                }
-                            }
+                            FileRowView(file: file)
                         }
+                    }
+                }
 
+//                VStack(alignment: .leading) {
+//                    Text(LanguageManager.shared.localized("mac_files_label"))
+//                        .frame(maxWidth: .infinity)
+//                        .multilineTextAlignment(.center)
+//                    List(selection: $selectedMacFiles) {
 //                        ForEach(macFiles) { file in
-//                            HStack {
-//                                Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
-//                                Text(file.name)
-//                            }
-//                            .contentShape(Rectangle()) // Make entire row selectable
-//                            .onTapGesture {
+//                            FileRowView(file: file) {
 //                                if file.isSpecialAction {
 //                                    loadMacFiles()
-//                                    selectedMacFiles.remove(file.id)  // Deselect Refresh immediately
+//                                    selectedMacFiles.remove(file.id)
 //                                } else if file.name == ".." {
-//                                    navigateMacFolder(to: file.name)
-//                                    selectedMacFiles.remove(file.id)  // Deselect ".." immediately
+//                                    navigateMacFolder(to: file)
+//                                    selectedMacFiles.remove(file.id)
 //                                }
 //                            }
 //                        }
-                    }
-                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                    .clipped()
-                }
+//
+////                        ForEach(macFiles) { file in
+////                            HStack {
+////                                Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
+////                                Text(file.name)
+////                            }
+////                            .contentShape(Rectangle()) // Make entire row selectable
+////                            .onTapGesture {
+////                                if file.isSpecialAction {
+////                                    loadMacFiles()
+////                                    selectedMacFiles.remove(file.id)  // Deselect Refresh immediately
+////                                } else if file.name == ".." {
+////                                    navigateMacFolder(to: file.name)
+////                                    selectedMacFiles.remove(file.id)  // Deselect ".." immediately
+////                                }
+////                            }
+////                        }
+//                    }
+//                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+//                    .clipped()
+//                }
                 .frame(minWidth: 0, maxWidth: .infinity)
                 
                 // Right Pane - Android Files or ADB Devices Output
@@ -81,37 +117,35 @@ struct ContentView: View {
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
                     } else {
-                        List(selection: $selectedAndroidFiles) {
-                            ForEach(androidFiles) { file in
-                                FileRowView(file: file) {
-                                    if file.isSpecialAction {
-                                        loadAndroidFiles()
-                                        selectedAndroidFiles.remove(file.id)
-                                    } else if file.name == ".." {
-                                        navigateAndroidFolder(to: file)
-                                        selectedAndroidFiles.remove(file.id)
-                                    }
+                        Button(action: loadAndroidFiles) {
+                                HStack {
+                                    Image(systemName: "arrow.clockwise")
+                                    Text("[ Refresh ]")
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(4)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            if !androidRootAliases.contains(currentAndroidPath) {
+                                Button(action: {
+                                    navigateAndroidFolder(to: FileEntry(name: "..", isFolder: true))
+                                }) {
+                                    HStack {
+                                        Image(systemName: "folder")
+                                        Text("..")
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(4)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
 
-//                            ForEach(androidFiles) { file in
-//                                HStack {
-//                                    Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
-//                                    Text(file.name)
-//                                }
-//                                .contentShape(Rectangle()) // Make entire row selectable
-//                                .onTapGesture {
-//                                    if file.isSpecialAction {
-//                                        loadAndroidFiles()
-//                                        selectedAndroidFiles.remove(file.id)
-//                                    } else if file.name == ".." {
-//                                        navigateAndroidFolder(to: file.name)
-//                                        selectedAndroidFiles.remove(file.id)
-//                                    }
-//                                }
-//
-//                            }
-                        }
+                            List(selection: $selectedAndroidFiles) {
+                                ForEach(androidFiles) { file in
+                                    FileRowView(file: file)
+                                }
+                            }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
                     }
@@ -154,19 +188,20 @@ struct ContentView: View {
 
     struct FileRowView: View {
         let file: FileEntry
-        let onTap: () -> Void
+        var onTap: (() -> Void)? = nil  // Make optional
 
         var body: some View {
             HStack {
-                Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
+                Image(systemName: file.isFolder ? "folder" : "doc.text")
                 Text(file.name)
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                onTap()
+                onTap?()
             }
         }
     }
+
 
     
     func navigateMacFolder(to file: FileEntry) {
