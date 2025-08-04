@@ -150,7 +150,7 @@ struct ContentView: View {
         androidFiles = []  // Blank out immediately
         showingAndroidFileList = false  // Hide list to force refresh visual
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
                 let output = try runADBCommand(arguments: ["ls", "/sdcard"])
                 androidFiles = output.components(separatedBy: "\n")
