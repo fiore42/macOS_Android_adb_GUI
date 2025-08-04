@@ -10,9 +10,7 @@ import Foundation
 
 struct ContentView: View {
     @State private var currentMacPath = ConfigManager.shared.macStartPath
-//    @State private var macFiles: [String] = []
     @State private var macFiles: [FileEntry] = []
-//    @State private var androidFiles: [String] = []
     @State private var androidFiles: [FileEntry] = []
     @State private var selectedMacFiles = Set<String>()
     @State private var selectedAndroidFiles = Set<String>()
@@ -67,14 +65,6 @@ struct ContentView: View {
                                     Text(file.name)
                                 }
                             }
-
-//                            ForEach(androidFiles, id: \.self) { file in
-//                                HStack {
-//                                    Image(systemName: isAndroidFolder(fileName: file) ? "folder" : "doc.text")
-//                                    Text(file)
-//                                }
-//                            }
-
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
@@ -125,12 +115,6 @@ struct ContentView: View {
         FileManager.default.fileExists(atPath: fullPath, isDirectory: &isDir)
         return isDir.boolValue
     }
-//    
-//    func isAndroidFolder(fileName: String) -> Bool {
-//        // Naive check for now: if name doesn't contain '.' it's probably a folder (adjust later)
-//        if fileName == ".." { return true }
-//        return !fileName.contains(".")
-//    }
     
     func loadMacFiles() {
         do {
@@ -193,37 +177,6 @@ struct ContentView: View {
             }
         }
     }
-
-    
-//    func loadAndroidFiles() {
-//        androidFiles = []
-//        showingAndroidFileList = false
-//
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-//            do {
-//                let currentPath = "/sdcard"  // <-- Later, you can make this dynamic when navigating
-//                let output = try runADBCommand(arguments: ["ls", currentPath])
-//                var files = output.components(separatedBy: "\n")
-//                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-//                    .filter { !$0.isEmpty }
-//                    .map { line in
-//                        let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
-//                        return parts.count == 4 ? String(parts[3]) : line
-//                    }
-//
-//                if currentPath != "/sdcard" {
-//                    files.insert("..", at: 0)
-//                }
-//
-//                androidFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
-//                    return isAndroidFolder(fileName: fileName)
-//                }
-//                showingAndroidFileList = true
-//            } catch {
-//                errorMessage = error.localizedDescription
-//            }
-//        }
-//    }
 
     func checkADBDevices() {
         do {
@@ -301,8 +254,3 @@ struct ADBFileManagerApp: App {
     }
 }
 
-// Sample config.json file content:
-// {
-//     "adb_path": "/opt/homebrew/bin/adb",
-//     "mac_start_path": "/Users/username/Downloads"
-// }
