@@ -10,6 +10,7 @@ import Foundation
 
 struct ContentView: View {
     @State private var macFiles: [String] = []
+    @State private var currentMacPath = ConfigManager.shared.macStartPath
     @State private var androidFiles: [String] = []
     @State private var selectedMacFiles = Set<String>()
     @State private var selectedAndroidFiles = Set<String>()
@@ -32,14 +33,22 @@ struct ContentView: View {
                         .multilineTextAlignment(.center)
                     List(selection: $selectedMacFiles) {
                         ForEach(macFiles, id: \.self) { file in
-                            Text(file)
+                            HStack {
+                                Image(systemName: isFolder(fileName: file) ? "folder" : "doc.text")
+                                Text(file)
+                            }
+                            //                            .onTapGesture(count: 2) {
+                            //                                if isFolder(fileName: file) || file == ".." {
+                            //                                    navigateMacFolder(to: file)
+                            //                                }
+                            //                            }
                         }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
                 }
                 .frame(minWidth: 0, maxWidth: .infinity)
-
+                
                 // Right Pane - Android Files or ADB Devices Output
                 VStack(alignment: .leading) {
                     Text(LanguageManager.shared.localized("android_files_label"))
@@ -66,7 +75,7 @@ struct ContentView: View {
                 .frame(minWidth: 0, maxWidth: .infinity)
             }
             .frame(maxHeight: .infinity)
-
+            
             // Action Buttons
             HStack {
                 Button(LanguageManager.shared.localized("adb_devices_button")) {
@@ -76,19 +85,19 @@ struct ContentView: View {
                     loadAndroidFiles()
                 }
                 .disabled(!buttonsEnabled)
-
+                
                 Button(LanguageManager.shared.localized("copy_to_android_button")) {
                     copyToAndroid()
                 }
                 .disabled(!buttonsEnabled)
-
+                
                 Button(LanguageManager.shared.localized("copy_to_mac_button")) {
                     copyToMac()
                 }
                 .disabled(!buttonsEnabled)
-
+                
             }
-
+            
             // Error Message
             if let errorMessage = errorMessage {
                 Text(errorMessage)
@@ -97,21 +106,27 @@ struct ContentView: View {
             }
         }
         .onAppear(perform: loadMacFiles)
-
     }
 
-    
-    
+
+
+    func isFolder(fileName: String) -> Bool {
+        if fileName == ".." { return true }  // Always treat ".." as folder
+        let fullPath = currentMacPath + "/" + fileName
+        var isDir: ObjCBool = false
+        FileManager.default.fileExists(atPath: fullPath, isDirectory: &isDir)
+        return isDir.boolValue
+    }
+        
     func loadMacFiles() {
-        let path = ConfigManager.shared.macStartPath
         do {
-            var files = try FileManager.default.contentsOfDirectory(atPath: path)
-            if path != "/" {
+            var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
+            if currentMacPath != "/" {
                 files.insert("..", at: 0)
             }
             macFiles = files
         } catch {
-            errorMessage = "Failed to load Mac files from \(path): \(error.localizedDescription)"
+            errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
     }
 
