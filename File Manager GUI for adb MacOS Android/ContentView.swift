@@ -121,14 +121,6 @@ struct ContentView: View {
         }
     }
 
-    func loadCommitLog() {
-        let logPath = FileManager.default.currentDirectoryPath + "/build_auto_commit.log"
-        do {
-            commitLogContent = try String(contentsOfFile: logPath)
-        } catch {
-            commitLogContent = "Failed to load commit log: \(error.localizedDescription)"
-        }
-    }
 }
 
 @main
