@@ -14,8 +14,8 @@ struct ContentView: View {
     @State private var androidRootAliases: [String] = ["/sdcard"]
     @State private var macFiles: [FileEntry] = []
     @State private var androidFiles: [FileEntry] = []
-    @State private var selectedMacFiles = Set<String>()
-    @State private var selectedAndroidFiles = Set<String>()
+    @State private var selectedMacFiles = Set<FileEntry>()
+    @State private var selectedAndroidFiles = Set<FileEntry>()
     @State private var errorMessage: String?
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
@@ -223,8 +223,8 @@ struct ContentView: View {
     func copyToAndroid() {
         let macPath = ConfigManager.shared.macStartPath
         for file in selectedMacFiles {
-            let sourcePath = macPath + "/" + file
-            let destinationPath = "/sdcard/" + file
+            let sourcePath = macPath + "/" + file.name
+            let destinationPath = "/sdcard/" + file.name
             do {
                 let output = try runADBCommand(arguments: ["push", sourcePath, destinationPath])
                 print(output)
@@ -237,8 +237,8 @@ struct ContentView: View {
     func copyToMac() {
         let macPath = ConfigManager.shared.macStartPath
         for file in selectedAndroidFiles {
-            let sourcePath = "/sdcard/" + file
-            let destinationPath = macPath + "/" + file
+            let sourcePath = "/sdcard/" + file.name
+            let destinationPath = macPath + "/" + file.name
             do {
                 let output = try runADBCommand(arguments: ["pull", sourcePath, destinationPath])
                 print(output)
