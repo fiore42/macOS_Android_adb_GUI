@@ -36,18 +36,10 @@ struct ContentView: View {
                         .multilineTextAlignment(.center)
                     List {
                         ForEach($macFiles) { $file in
-                            FileRowView(file: $file, isFocused: macPaneFocused)
-                                .onTapGesture {
-                                    macPaneFocused = true
-                                    androidPaneFocused = false
-                                    if file.isSpecialAction {
-                                        loadMacFiles()
-                                        file.isSelected = false
-                                    } else if file.name == ".." {
-                                        navigateMacFolder(to: file)
-                                        file.isSelected = false
-                                    }
-                                }
+                            FileRowView(file: $file, isFocused: macPaneFocused, onFocusChange: {
+                                macPaneFocused = true
+                                androidPaneFocused = false
+                            })
                         }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -71,18 +63,11 @@ struct ContentView: View {
                     } else {
                         List {
                             ForEach($androidFiles) { $file in
-                                FileRowView(file: $file, isFocused: androidPaneFocused)
-                                    .onTapGesture {
-                                        macPaneFocused = false
-                                        androidPaneFocused = true
-                                        if file.isSpecialAction {
-                                            loadAndroidFiles()
-                                            file.isSelected = false
-                                        } else if file.name == ".." {
-                                            navigateAndroidFolder(to: file)
-                                            file.isSelected = false
-                                        }
-                                    }
+                                FileRowView(file: $file, isFocused: androidPaneFocused, onFocusChange: {
+                                    macPaneFocused = false
+                                    androidPaneFocused = true
+                                })
+
                             }
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -128,6 +113,7 @@ struct ContentView: View {
     struct FileRowView: View {
         @Binding var file: FileEntry
         var isFocused: Bool
+        var onFocusChange: () -> Void
 
         var body: some View {
             HStack {
@@ -135,6 +121,7 @@ struct ContentView: View {
                     Image(systemName: file.isSelected ? "checkmark.square" : "square")
                         .onTapGesture {
                             file.isSelected.toggle()
+                            onFocusChange()  // Ensure tap on checkbox focuses pane
                         }
                 } else {
                     Spacer().frame(width: 20) // Empty space instead of checkbox
@@ -147,6 +134,8 @@ struct ContentView: View {
             .background(file.isSelected ? (isFocused ? Color.blue.opacity(0.3) : Color.gray.opacity(0.3)) : Color.clear)
             .contentShape(Rectangle())
             .onTapGesture {
+                onFocusChange()  // Any tap on the row will set focus
+
                 if file.isSpecialAction {
                     // Special action tap
                 } else if file.name == ".." {
