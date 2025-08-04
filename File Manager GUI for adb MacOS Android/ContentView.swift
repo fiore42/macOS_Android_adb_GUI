@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var showingADBDevicesOutput = false
     @State private var adbDevicesOutput: String = ""
     @State private var buttonsEnabled = false
+    @State private var showingAndroidFileList = false
 
 
     var body: some View {
@@ -44,7 +45,7 @@ struct ContentView: View {
                     Text(LanguageManager.shared.localized("android_files_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                    if showingADBDevicesOutput {
+                    if showingADBDevicesOutput && !showingAndroidFileList {
                         ScrollView([.vertical, .horizontal]) {
                             Text(adbDevicesOutput)
                                 .padding()
@@ -122,21 +123,26 @@ struct ContentView: View {
             if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
                 adbDevicesOutput = LanguageManager.shared.localized("no_device_found")
                 buttonsEnabled = false
+                showingAndroidFileList = false
             } else if authorizedDevices.count > 1 {
                 adbDevicesOutput = LanguageManager.shared.localized("multiple_authorized_devices")
                 buttonsEnabled = false
+                showingAndroidFileList = false
             } else if authorizedDevices.count == 1 {
                 adbDevicesOutput = LanguageManager.shared.localized("ok_ready_to_copy")
                 buttonsEnabled = true
+                showingAndroidFileList = false
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
                 adbDevicesOutput = LanguageManager.shared.localized("no_authorized_device_found")
                 buttonsEnabled = false
+                showingAndroidFileList = false
             }
             showingADBDevicesOutput = true
         } catch {
             adbDevicesOutput = "ADB Error: \(error.localizedDescription)"
             showingADBDevicesOutput = true
             buttonsEnabled = false
+            showingAndroidFileList = false
         }
     }
 
@@ -146,6 +152,7 @@ struct ContentView: View {
             androidFiles = output.components(separatedBy: "\n")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
+            showingAndroidFileList = true
         } catch {
             errorMessage = error.localizedDescription
         }
