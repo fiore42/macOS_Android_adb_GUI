@@ -136,6 +136,36 @@ struct ContentView: View {
             errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
     }
+    
+    func loadAndroidFiles() {
+        androidFiles = []
+        showingAndroidFileList = false
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            do {
+                let currentPath = "/sdcard"  // <-- Later, you can make this dynamic when navigating
+                let output = try runADBCommand(arguments: ["ls", currentPath])
+                var files = output.components(separatedBy: "\n")
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
+                    .map { line in
+                        let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
+                        return parts.count == 4 ? String(parts[3]) : line
+                    }
+
+                if currentPath != "/sdcard" {
+                    files.insert("..", at: 0)
+                }
+
+                androidFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
+                    return isAndroidFolder(fileName: fileName)
+                }
+                showingAndroidFileList = true
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
 
     func checkADBDevices() {
         do {
@@ -172,35 +202,7 @@ struct ContentView: View {
         }
     }
 
-    func loadAndroidFiles() {
-        androidFiles = []
-        showingAndroidFileList = false
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            do {
-                let currentPath = "/sdcard"  // <-- Later, you can make this dynamic when navigating
-                let output = try runADBCommand(arguments: ["ls", currentPath])
-                var files = output.components(separatedBy: "\n")
-                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                    .filter { !$0.isEmpty }
-                    .map { line in
-                        let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
-                        return parts.count == 4 ? String(parts[3]) : line
-                    }
-
-                if currentPath != "/sdcard" {
-                    files.insert("..", at: 0)
-                }
-
-                androidFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
-                    return isAndroidFolder(fileName: fileName)
-                }
-                showingAndroidFileList = true
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
+ 
 
     func copyToAndroid() {
         let macPath = ConfigManager.shared.macStartPath

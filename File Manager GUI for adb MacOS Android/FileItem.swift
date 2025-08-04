@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct FileItem: Identifiable {
+struct FileEntry: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let isFolder: Bool
