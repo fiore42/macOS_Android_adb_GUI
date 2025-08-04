@@ -8,18 +8,12 @@
 
 import Foundation
 
-//struct FileEntry: Identifiable, Hashable {
-//    let id = UUID()
-//    let name: String
-//    let isFolder: Bool
-//}
-
-struct FileEntry: Identifiable, Hashable {
-    var id: String { name }  // Ensure name is unique enough
+struct FileEntry: Identifiable {
+    let id = UUID().uuidString
     let name: String
     let isFolder: Bool
+    var isSpecialAction: Bool = false  // For entries like "Refresh"
 }
-
 
 extension Array where Element == FileEntry {
     func sortedWithFoldersFirst() -> [FileEntry] {

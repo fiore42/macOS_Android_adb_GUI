@@ -127,10 +127,16 @@ struct ContentView: View {
             if currentMacPath != "/" {
                 files.insert("..", at: 0)
             }
-            let entries = files.map { fileName in
+            var entries = files.map { fileName in
                 FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
             }
-            macFiles = entries.sortedWithFoldersFirst()
+
+            entries = entries.sortedWithFoldersFirst()
+
+            entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+
+            macFiles = entries
+
         } catch {
             errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
@@ -179,7 +185,12 @@ struct ContentView: View {
                     entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
                 }
 
-                androidFiles = entries.sortedWithFoldersFirst()
+                entries = entries.sortedWithFoldersFirst()
+
+                entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+
+                androidFiles = entries
+                
                 showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
