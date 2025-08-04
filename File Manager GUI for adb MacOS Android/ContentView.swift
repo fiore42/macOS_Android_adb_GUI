@@ -156,21 +156,27 @@ struct ContentView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
-                let output = try runADBCommand(arguments: ["ls", "/sdcard"])
-                androidFiles = output.components(separatedBy: "\n")
+                let currentPath = "/sdcard"  // <-- Later, you can make this dynamic when navigating
+                let output = try runADBCommand(arguments: ["ls", currentPath])
+                var files = output.components(separatedBy: "\n")
                     .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                     .filter { !$0.isEmpty }
                     .map { line in
                         let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true)
                         return parts.count == 4 ? String(parts[3]) : line
                     }
+
+                if currentPath != "/sdcard" {
+                    files.insert("..", at: 0)
+                }
+
+                androidFiles = files
                 showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
     }
-    
 
     func copyToAndroid() {
         let macPath = ConfigManager.shared.macStartPath
