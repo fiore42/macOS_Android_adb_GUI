@@ -36,7 +36,7 @@ class ConfigManager: ObservableObject {
                 }
             }
         } catch {
-            print("Failed to load config.json: \(error.localizedDescription)")
+            print("Failed to load config.json at \(configURL.path): \(error.localizedDescription)")
         }
     }
 }
