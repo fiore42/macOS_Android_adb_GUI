@@ -34,7 +34,7 @@ struct ContentView: View {
                     List(selection: $selectedMacFiles) {
                         ForEach(macFiles, id: \.self) { file in
                             HStack {
-                                Image(systemName: isFolder(fileName: file) ? "folder" : "doc.text")
+                                Image(systemName: isMacFolder(fileName: file) ? "folder" : "doc.text")
                                 Text(file)
                             }
                         }
@@ -60,8 +60,12 @@ struct ContentView: View {
                     } else {
                         List(selection: $selectedAndroidFiles) {
                             ForEach(androidFiles, id: \.self) { file in
-                                Text(file)
+                                HStack {
+                                    Image(systemName: isAndroidFolder(fileName: file) ? "folder" : "doc.text")
+                                    Text(file)
+                                }
                             }
+
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
@@ -105,14 +109,20 @@ struct ContentView: View {
 
 
 
-    func isFolder(fileName: String) -> Bool {
+    func isMacFolder(fileName: String) -> Bool {
         if fileName == ".." { return true }  // Always treat ".." as folder
         let fullPath = currentMacPath + "/" + fileName
         var isDir: ObjCBool = false
         FileManager.default.fileExists(atPath: fullPath, isDirectory: &isDir)
         return isDir.boolValue
     }
-        
+    
+    func isAndroidFolder(fileName: String) -> Bool {
+        // Naive check for now: if name doesn't contain '.' it's probably a folder (adjust later)
+        if fileName == ".." { return true }
+        return !fileName.contains(".")
+    }
+    
     func loadMacFiles() {
         do {
             var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
@@ -120,7 +130,7 @@ struct ContentView: View {
                 files.insert("..", at: 0)
             }
             macFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
-                return isFolder(fileName: fileName)
+                return isMacFolder(fileName: fileName)
             }
         } catch {
             errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
@@ -182,7 +192,9 @@ struct ContentView: View {
                     files.insert("..", at: 0)
                 }
 
-                androidFiles = files
+                androidFiles = sortAndOrganizeFiles(fileNames: files) { fileName in
+                    return isAndroidFolder(fileName: fileName)
+                }
                 showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
