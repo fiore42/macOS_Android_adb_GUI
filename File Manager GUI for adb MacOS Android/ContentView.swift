@@ -144,7 +144,7 @@ struct ContentView: View {
     
     func loadAndroidFiles() {
         do {
-            let output = try runADBCommand(arguments: ["shell", "ls", "/sdcard"])
+            let output = try runADBCommand(arguments: ["ls", "/sdcard"])
             androidFiles = output.components(separatedBy: "\n").filter { !$0.isEmpty }
         } catch {
             errorMessage = error.localizedDescription
