@@ -22,40 +22,45 @@ struct ContentView: View {
     var body: some View {
         VStack {
             HStack(spacing: 0) {
-                ScrollView([.vertical, .horizontal]) {
-                    VStack(alignment: .leading) {
-                        Text(LanguageManager.shared.localized("mac_files_label"))
-                        List(selection: $selectedMacFiles) {
-                            ForEach(macFiles, id: \.self) { file in
+                // Left Pane - Mac Files
+                VStack(alignment: .leading) {
+                    Text(LanguageManager.shared.localized("mac_files_label"))
+                    List(selection: $selectedMacFiles) {
+                        ForEach(macFiles, id: \.self) { file in
+                            Text(file)
+                        }
+                    }
+                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    .clipped()
+                }
+                .frame(minWidth: 0, maxWidth: .infinity)
+
+                // Right Pane - Android Files or ADB Devices Output
+                VStack(alignment: .leading) {
+                    Text(LanguageManager.shared.localized("android_files_label"))
+                    if showingADBDevicesOutput {
+                        ScrollView([.vertical, .horizontal]) {
+                            Text(adbDevicesOutput)
+                                .padding()
+                                .foregroundColor(adbDevicesOutput == LanguageManager.shared.localized("ok_ready_to_copy") ? .green : .red)
+                        }
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                        .clipped()
+                    } else {
+                        List(selection: $selectedAndroidFiles) {
+                            ForEach(androidFiles, id: \.self) { file in
                                 Text(file)
                             }
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                    }
-                }
-                .frame(minWidth: 0, maxWidth: .infinity)
-
-                ScrollView([.vertical, .horizontal]) {
-                    VStack(alignment: .leading) {
-                        Text(LanguageManager.shared.localized("android_files_label"))
-                        if showingADBDevicesOutput {
-                            Text(adbDevicesOutput)
-                                .padding()
-                                .foregroundColor(adbDevicesOutput == LanguageManager.shared.localized("ok_ready_to_copy") ? .green : .red)
-                        } else {
-                            List(selection: $selectedAndroidFiles) {
-                                ForEach(androidFiles, id: \.self) { file in
-                                    Text(file)
-                                }
-                            }
-                        }
+                        .clipped()
                     }
                 }
                 .frame(minWidth: 0, maxWidth: .infinity)
             }
             .frame(maxHeight: .infinity)
 
-
+            // Action Buttons
             HStack {
                 Button(LanguageManager.shared.localized("adb_devices_button")) {
                     checkADBDevices()
@@ -71,6 +76,7 @@ struct ContentView: View {
                 }
             }
 
+            // Error Message
             if let errorMessage = errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
@@ -78,20 +84,7 @@ struct ContentView: View {
             }
         }
         .onAppear(perform: loadMacFiles)
-        .sheet(isPresented: $showLogViewer) {
-            VStack(alignment: .leading) {
-                Text("Build Auto-Commit Log")
-                    .font(.headline)
-                    .padding()
-                ScrollView {
-                    Text(commitLogContent)
-                        .padding()
-                        .font(.system(size: 12, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-            .frame(minWidth: 600, minHeight: 400)
-        }
+
     }
 
     
