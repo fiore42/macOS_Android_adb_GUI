@@ -176,8 +176,7 @@ struct ContentView: View {
 
                 for line in lines {
                     let tokens = line.split(separator: " ", omittingEmptySubsequences: true)
-                    guard tokens.count >= 9 else { continue }
-                    let fileName = tokens[8]
+                    guard let fileName = tokens.last else { continue }
                     let isDir = tokens[0].starts(with: "d")
                     entries.append(FileEntry(name: String(fileName), isFolder: isDir))
                 }
