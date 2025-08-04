@@ -21,7 +21,7 @@ struct ContentView: View {
         VStack {
             HStack {
                 VStack {
-                    Text("Mac Files")
+                    LocalizedText(key: "mac_files_label")
                     List(selection: $selectedMacFiles) {
                         ForEach(macFiles, id: \.self) { file in
                             Text(file)
@@ -30,7 +30,7 @@ struct ContentView: View {
                 }
 
                 VStack {
-                    Text("Android Files")
+                    LocalizedText(key: "android_files_label")
                     List(selection: $selectedAndroidFiles) {
                         ForEach(androidFiles, id: \.self) { file in
                             Text(file)
@@ -41,13 +41,13 @@ struct ContentView: View {
             .frame(maxHeight: .infinity)
 
             HStack {
-                Button("Load Android Files") {
+                Button(LanguageManager.shared.localized("load_android_files_button")) {
                     loadAndroidFiles()
                 }
-                Button("Copy to Android") {
+                Button(LanguageManager.shared.localized("copy_to_android_button")) {
                     copyToAndroid()
                 }
-                Button("Copy to Mac") {
+                Button(LanguageManager.shared.localized("copy_to_mac_button")) {
                     copyToMac()
                 }
             }
