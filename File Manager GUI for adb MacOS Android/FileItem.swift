@@ -43,3 +43,25 @@ func sortAndOrganizeFiles(fileNames: [String], isFolderCheck: (String) -> Bool) 
 }
 
 
+extension Array where Element == FileEntry {
+    func sortedWithFoldersFirst() -> [FileEntry] {
+        var parentDir: [FileEntry] = []
+        var folders: [FileEntry] = []
+        var files: [FileEntry] = []
+
+        for entry in self {
+            if entry.name == ".." {
+                parentDir.append(entry)
+            } else if entry.isFolder {
+                folders.append(entry)
+            } else {
+                files.append(entry)
+            }
+        }
+
+        folders.sort { $0.name.localizedCompare($1.name) == .orderedAscending }
+        files.sort { $0.name.localizedCompare($1.name) == .orderedAscending }
+
+        return parentDir + folders + files
+    }
+}

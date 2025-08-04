@@ -133,7 +133,7 @@ struct ContentView: View {
             let entries = files.map { fileName in
                 FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
             }
-            macFiles = entries
+            macFiles = entries.sortedWithFoldersFirst()
         } catch {
             errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
