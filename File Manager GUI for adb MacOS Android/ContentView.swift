@@ -50,10 +50,6 @@ struct ContentView: View {
                 Button("Copy to Mac") {
                     copyToMac()
                 }
-                Button("Show Build Commit Log") {
-                    loadCommitLog()
-                    showLogViewer = true
-                }
             }
 
             if let errorMessage = errorMessage {
