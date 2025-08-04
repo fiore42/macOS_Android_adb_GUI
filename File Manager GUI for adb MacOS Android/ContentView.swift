@@ -243,10 +243,10 @@ struct ContentView: View {
 
     func copyToMac() {
         let macPath = ConfigManager.shared.macStartPath
-        for fileID in selectedMacFiles {
-            if let file = macFiles.first(where: { $0.id == fileID }) {
-                let sourcePath = macPath + "/" + file.name
-                let destinationPath = "/sdcard/" + file.name
+        for fileID in selectedAndroidFiles {
+            if let file = androidFiles.first(where: { $0.id == fileID }) {
+                let sourcePath = "/sdcard/" + file.name
+                let destinationPath = macPath + "/" + file.name
                 do {
                     let output = try runADBCommand(arguments: ["pull", sourcePath, destinationPath])
                     print(output)
