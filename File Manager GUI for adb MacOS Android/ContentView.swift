@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var errorMessage: String?
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
+    @State private var showingADBDevicesOutput = false
+    @State private var adbDevicesOutput: String = ""
 
     var body: some View {
         VStack {
@@ -31,9 +33,17 @@ struct ContentView: View {
 
                 VStack {
                     LocalizedText(key: "android_files_label")
-                    List(selection: $selectedAndroidFiles) {
-                        ForEach(androidFiles, id: \.self) { file in
-                            Text(file)
+                    if showingADBDevicesOutput {
+                        ScrollView {
+                            Text(adbDevicesOutput)
+                                .padding()
+                                .foregroundColor(.blue)
+                        }
+                    } else {
+                        List(selection: $selectedAndroidFiles) {
+                            ForEach(androidFiles, id: \.self) { file in
+                                Text(file)
+                            }
                         }
                     }
                 }
@@ -41,6 +51,9 @@ struct ContentView: View {
             .frame(maxHeight: .infinity)
 
             HStack {
+                Button(LanguageManager.shared.localized("adb_devices_button")) {
+                    checkADBDevices()
+                }
                 Button(LanguageManager.shared.localized("load_android_files_button")) {
                     loadAndroidFiles()
                 }
@@ -75,6 +88,8 @@ struct ContentView: View {
         }
     }
 
+    
+    
     func loadMacFiles() {
         let path = ConfigManager.shared.macStartPath
         do {
@@ -84,6 +99,32 @@ struct ContentView: View {
         }
     }
 
+    func checkADBDevices() {
+        do {
+            let output = try runADBCommand(arguments: ["devices"])
+            let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+            let deviceLines = lines.dropFirst() // skip header line
+            
+            let authorizedDevices = deviceLines.filter { $0.contains("\tdevice") }
+            let unauthorizedDevices = deviceLines.filter { $0.contains("\tunauthorized") }
+
+            if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
+                adbDevicesOutput = LanguageManager.shared.localized("no_device_found")
+            } else if authorizedDevices.count > 1 {
+                adbDevicesOutput = LanguageManager.shared.localized("multiple_authorized_devices")
+            } else if authorizedDevices.count == 1 {
+                adbDevicesOutput = LanguageManager.shared.localized("ok_ready_to_copy")
+            } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
+                adbDevicesOutput = LanguageManager.shared.localized("no_authorized_device_found")
+            }
+            showingADBDevicesOutput = true
+        } catch {
+            adbDevicesOutput = "ADB Error: \(error.localizedDescription)"
+            showingADBDevicesOutput = true
+        }
+    }
+
+    
     func loadAndroidFiles() {
         do {
             let output = try runADBCommand(arguments: ["shell", "ls", "/sdcard"])

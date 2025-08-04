@@ -11,7 +11,7 @@ import Foundation
 class ConfigManager: ObservableObject {
     static let shared = ConfigManager()
     
-    @Published var adbPath: String = "/usr/local/bin/adb"
+    @Published var adbPath: String = "/opt/homebrew/bin/adb"
     @Published var macStartPath: String = FileManager.default.homeDirectoryForCurrentUser.path
     @Published var defaultLanguage: String = "en"
 
