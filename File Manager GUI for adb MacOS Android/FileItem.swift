@@ -13,6 +13,7 @@ struct FileEntry: Identifiable {
     let name: String
     let isFolder: Bool
     var isSpecialAction: Bool = false  // For entries like "Refresh"
+    var isSelected: Bool = false  
 }
 
 extension Array where Element == FileEntry {

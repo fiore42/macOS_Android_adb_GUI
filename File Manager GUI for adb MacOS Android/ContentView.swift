@@ -23,6 +23,8 @@ struct ContentView: View {
     @State private var adbDevicesOutput: String = ""
     @State private var buttonsEnabled = false
     @State private var showingAndroidFileList = false
+    @State private var macPaneFocused: Bool = true
+    @State private var androidPaneFocused: Bool = false
 
     var body: some View {
         VStack {
@@ -32,35 +34,21 @@ struct ContentView: View {
                     Text(LanguageManager.shared.localized("mac_files_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                    List(selection: $selectedMacFiles) {
-                        ForEach(macFiles) { file in
-                            FileRowView(file: file) {
-                                if file.isSpecialAction {
-                                    loadMacFiles()
-                                    selectedMacFiles.remove(file.id)
-                                } else if file.name == ".." {
-                                    navigateMacFolder(to: file)
-                                    selectedMacFiles.remove(file.id)
+                    List {
+                        ForEach($macFiles) { $file in
+                            FileRowView(file: $file, isFocused: macPaneFocused)
+                                .onTapGesture {
+                                    macPaneFocused = true
+                                    androidPaneFocused = false
+                                    if file.isSpecialAction {
+                                        loadMacFiles()
+                                        file.isSelected = false
+                                    } else if file.name == ".." {
+                                        navigateMacFolder(to: file)
+                                        file.isSelected = false
+                                    }
                                 }
-                            }
                         }
-
-//                        ForEach(macFiles) { file in
-//                            HStack {
-//                                Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
-//                                Text(file.name)
-//                            }
-//                            .contentShape(Rectangle()) // Make entire row selectable
-//                            .onTapGesture {
-//                                if file.isSpecialAction {
-//                                    loadMacFiles()
-//                                    selectedMacFiles.remove(file.id)  // Deselect Refresh immediately
-//                                } else if file.name == ".." {
-//                                    navigateMacFolder(to: file.name)
-//                                    selectedMacFiles.remove(file.id)  // Deselect ".." immediately
-//                                }
-//                            }
-//                        }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
@@ -81,36 +69,21 @@ struct ContentView: View {
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
                     } else {
-                        List(selection: $selectedAndroidFiles) {
-                            ForEach(androidFiles) { file in
-                                FileRowView(file: file) {
-                                    if file.isSpecialAction {
-                                        loadAndroidFiles()
-                                        selectedAndroidFiles.remove(file.id)
-                                    } else if file.name == ".." {
-                                        navigateAndroidFolder(to: file)
-                                        selectedAndroidFiles.remove(file.id)
+                        List {
+                            ForEach($androidFiles) { $file in
+                                FileRowView(file: $file, isFocused: androidPaneFocused)
+                                    .onTapGesture {
+                                        macPaneFocused = false
+                                        androidPaneFocused = true
+                                        if file.isSpecialAction {
+                                            loadAndroidFiles()
+                                            file.isSelected = false
+                                        } else if file.name == ".." {
+                                            navigateAndroidFolder(to: file)
+                                            file.isSelected = false
+                                        }
                                     }
-                                }
                             }
-
-//                            ForEach(androidFiles) { file in
-//                                HStack {
-//                                    Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
-//                                    Text(file.name)
-//                                }
-//                                .contentShape(Rectangle()) // Make entire row selectable
-//                                .onTapGesture {
-//                                    if file.isSpecialAction {
-//                                        loadAndroidFiles()
-//                                        selectedAndroidFiles.remove(file.id)
-//                                    } else if file.name == ".." {
-//                                        navigateAndroidFolder(to: file.name)
-//                                        selectedAndroidFiles.remove(file.id)
-//                                    }
-//                                }
-//
-//                            }
                         }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
@@ -153,20 +126,36 @@ struct ContentView: View {
     }
 
     struct FileRowView: View {
-        let file: FileEntry
-        let onTap: () -> Void
+        @Binding var file: FileEntry
+        var isFocused: Bool
 
         var body: some View {
             HStack {
+                if !file.isSpecialAction && file.name != ".." {
+                    Image(systemName: file.isSelected ? "checkmark.square" : "square")
+                        .onTapGesture {
+                            file.isSelected.toggle()
+                        }
+                } else {
+                    Spacer().frame(width: 20) // Empty space instead of checkbox
+                }
                 Image(systemName: file.isSpecialAction ? "arrow.clockwise" : (file.isFolder ? "folder" : "doc.text"))
                 Text(file.name)
+                Spacer()
             }
+            .padding(.vertical, 2)
+            .background(file.isSelected ? (isFocused ? Color.blue.opacity(0.3) : Color.gray.opacity(0.3)) : Color.clear)
             .contentShape(Rectangle())
             .onTapGesture {
-                onTap()
+                if file.isSpecialAction {
+                    // Special action tap
+                } else if file.name == ".." {
+                    // Navigate up
+                }
             }
         }
     }
+
 
     
     func navigateMacFolder(to file: FileEntry) {
