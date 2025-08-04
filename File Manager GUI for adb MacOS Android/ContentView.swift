@@ -21,34 +21,40 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            HStack {
-                VStack {
-                    LocalizedText(key: "mac_files_label")
-                    List(selection: $selectedMacFiles) {
-                        ForEach(macFiles, id: \.self) { file in
-                            Text(file)
+            HStack(spacing: 0) {
+                ScrollView([.vertical, .horizontal]) {
+                    VStack(alignment: .leading) {
+                        Text(LanguageManager.shared.localized("mac_files_label"))
+                        List(selection: $selectedMacFiles) {
+                            ForEach(macFiles, id: \.self) { file in
+                                Text(file)
+                            }
                         }
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     }
                 }
+                .frame(minWidth: 0, maxWidth: .infinity)
 
-                VStack {
-                    LocalizedText(key: "android_files_label")
-                    if showingADBDevicesOutput {
-                        ScrollView {
+                ScrollView([.vertical, .horizontal]) {
+                    VStack(alignment: .leading) {
+                        Text(LanguageManager.shared.localized("android_files_label"))
+                        if showingADBDevicesOutput {
                             Text(adbDevicesOutput)
                                 .padding()
-                                .foregroundColor(.blue)
-                        }
-                    } else {
-                        List(selection: $selectedAndroidFiles) {
-                            ForEach(androidFiles, id: \.self) { file in
-                                Text(file)
+                                .foregroundColor(adbDevicesOutput == LanguageManager.shared.localized("ok_ready_to_copy") ? .green : .red)
+                        } else {
+                            List(selection: $selectedAndroidFiles) {
+                                ForEach(androidFiles, id: \.self) { file in
+                                    Text(file)
+                                }
                             }
                         }
                     }
                 }
+                .frame(minWidth: 0, maxWidth: .infinity)
             }
             .frame(maxHeight: .infinity)
+
 
             HStack {
                 Button(LanguageManager.shared.localized("adb_devices_button")) {
