@@ -41,5 +41,7 @@ func runADBCommand(arguments: [String]) throws -> String {
             NSLocalizedDescriptionKey: "Failed to read adb output as UTF-8."
         ])
     }
+    print("Command output: \(output)")
+
     return output
 }
