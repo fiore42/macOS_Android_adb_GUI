@@ -135,7 +135,7 @@ struct ContentView: View {
                 .disabled(!buttonsEnabled)
                 
             }
-            .padding(.bottom, 5) 
+            .padding(.bottom, 5)
             
             // Error Message
             if let errorMessage = errorMessage {
@@ -201,8 +201,25 @@ struct ContentView: View {
 
 
     func navigateAndroidFolder(to file: FileEntry) {
-        // Will implement navigation logic later
+        if file.name == ".." {
+            // Go up one level
+            if currentAndroidPath != "/sdcard" {
+                currentAndroidPath = URL(fileURLWithPath: currentAndroidPath).deletingLastPathComponent().path
+                if currentAndroidPath.isEmpty {
+                    currentAndroidPath = "/sdcard"  // Prevent empty path fallback
+                }
+            }
+        } else if file.isFolder {
+            // Navigate into folder
+            currentAndroidPath = currentAndroidPath + "/" + file.name
+        }
+        loadAndroidFiles()
     }
+
+    func isAndroidFolder(fileName: String) -> Bool {
+        return true  // For now, we rely on `ls -la` parsing with `isFolder` already set correctly
+    }
+
 
     func isMacFolder(fileName: String) -> Bool {
         if fileName == ".." { return true }  // Always treat ".." as folder
@@ -262,7 +279,9 @@ struct ContentView: View {
         showingAndroidFileList = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
-                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
+//                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
+                let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
+                currentAndroidPath = resolvedPath
                 if !androidRootAliases.contains(resolvedPath) {
                     androidRootAliases.append(resolvedPath)
                 }
