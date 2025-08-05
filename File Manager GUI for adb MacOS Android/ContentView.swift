@@ -59,10 +59,10 @@ struct ContentView: View {
                             }
                         }
                     }
-
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
                 }
+                .padding(.leading, 5)
                 .frame(minWidth: 0, maxWidth: .infinity)
                 
                 // Right Pane - Android Files or ADB Devices Output
@@ -109,6 +109,7 @@ struct ContentView: View {
                         .clipped()
                     }
                 }
+                .padding(.leading, 5)
                 .frame(minWidth: 0, maxWidth: .infinity)
             }
             .frame(maxHeight: .infinity)
@@ -134,6 +135,7 @@ struct ContentView: View {
                 .disabled(!buttonsEnabled)
                 
             }
+            .padding(.bottom, 5) 
             
             // Error Message
             if let errorMessage = errorMessage {
