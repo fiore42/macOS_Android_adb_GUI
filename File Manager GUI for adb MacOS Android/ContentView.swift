@@ -204,10 +204,10 @@ struct ContentView: View {
     func navigateAndroidFolder(to file: FileEntry) {
         if file.name == ".." {
             // Go up one level
-            if currentAndroidPath != "/sdcard" {
+            if currentAndroidPath != Self.androidRoot {
                 currentAndroidPath = URL(fileURLWithPath: currentAndroidPath).deletingLastPathComponent().path
                 if currentAndroidPath.isEmpty {
-                    currentAndroidPath = "/sdcard"  // Prevent empty path fallback
+                    currentAndroidPath = Self.androidRoot  // Prevent empty path fallback
                 }
             }
         } else if file.isFolder {
@@ -337,7 +337,7 @@ struct ContentView: View {
 //        showingAndroidFileList = false
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
 //            do {
-////                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
+////                let resolvedPath = try resolveAndroidPath(initialPath: androidRoot)
 //                let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
 //                currentAndroidPath = resolvedPath
 //                if !androidRootAliases.contains(resolvedPath) {
