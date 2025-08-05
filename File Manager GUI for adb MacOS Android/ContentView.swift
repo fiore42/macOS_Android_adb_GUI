@@ -273,18 +273,20 @@ struct ContentView: View {
             }
         }
     }
-
+    
     func loadAndroidFiles() {
         androidFiles = []
         showingAndroidFileList = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
-//                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
                 let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
-                currentAndroidPath = resolvedPath
-                if !androidRootAliases.contains(resolvedPath) {
+                currentAndroidPath = resolvedPath  // Always keep currentAndroidPath updated
+
+                // Add resolvedPath as a root alias if it's the initial launch
+                if androidRootAliases.isEmpty {
                     androidRootAliases.append(resolvedPath)
                 }
+
                 print("Resolved Android Path: \(resolvedPath)")
 
                 let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
@@ -300,23 +302,66 @@ struct ContentView: View {
                     entries.append(FileEntry(name: String(fileName), isFolder: isDir))
                 }
 
-                let isAtRootAlias = androidRootAliases.contains(resolvedPath)
-                if !isAtRootAlias {
+                // Only add ".." if not at the root alias
+                if !androidRootAliases.contains(resolvedPath) {
                     entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
                 }
 
                 entries = entries.sortedWithFoldersFirst()
-
                 entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
 
                 androidFiles = entries
-                
                 showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
     }
+
+
+//    func loadAndroidFiles() {
+//        androidFiles = []
+//        showingAndroidFileList = false
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+//            do {
+////                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
+//                let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
+//                currentAndroidPath = resolvedPath
+//                if !androidRootAliases.contains(resolvedPath) {
+//                    androidRootAliases.append(resolvedPath)
+//                }
+//                print("Resolved Android Path: \(resolvedPath)")
+//
+//                let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
+//                var entries: [FileEntry] = []
+//
+//                let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
+//
+//                for line in lines {
+//                    if line.starts(with: "total") { continue }  // Skip summary line
+//                    let tokens = line.split(separator: " ", omittingEmptySubsequences: true)
+//                    guard let fileName = tokens.last else { continue }
+//                    let isDir = tokens[0].starts(with: "d")
+//                    entries.append(FileEntry(name: String(fileName), isFolder: isDir))
+//                }
+//
+//                let isAtRootAlias = androidRootAliases.contains(resolvedPath)
+//                if !isAtRootAlias {
+//                    entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
+//                }
+//
+//                entries = entries.sortedWithFoldersFirst()
+//
+//                entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+//
+//                androidFiles = entries
+//                
+//                showingAndroidFileList = true
+//            } catch {
+//                errorMessage = error.localizedDescription
+//            }
+//        }
+//    }
 
     func checkADBDevices() {
         do {
