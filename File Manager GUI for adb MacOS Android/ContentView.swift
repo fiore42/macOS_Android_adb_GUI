@@ -288,10 +288,10 @@ struct ContentView: View {
                     print("Added initial androidRootAlias: \(resolvedPath)")
                 }
 
-                if !androidRootAliases.contains(resolvedPath) {
-                    androidRootAliases.append(resolvedPath)
-                    print("Dynamically added root alias: \(resolvedPath)")
-                }
+//                if !androidRootAliases.contains(resolvedPath) {
+//                    androidRootAliases.append(resolvedPath)
+//                    print("Dynamically added root alias: \(resolvedPath)")
+//                }
                 
                 print("Resolved Android Path: \(resolvedPath)")
 
