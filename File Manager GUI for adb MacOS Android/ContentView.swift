@@ -43,6 +43,7 @@ struct ContentView: View {
                             FileRowView(
                                 file: $file,
                                 isFocused: macPaneFocused,
+                                selectedIDs: $selectedMacFiles,
                                 onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
                                 onSpecialAction: { loadMacFiles() },
                                 onNavigate: { navigateMacFolder(to: file) }
@@ -54,6 +55,7 @@ struct ContentView: View {
                                     FileRowView(
                                         file: $file,
                                         isFocused: macPaneFocused,
+                                        selectedIDs: $selectedMacFiles,
                                         onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
                                         onSpecialAction: { loadMacFiles() },
                                         onNavigate: { navigateMacFolder(to: file) }
@@ -88,6 +90,7 @@ struct ContentView: View {
                                 FileRowView(
                                     file: $file,
                                     isFocused: androidPaneFocused,
+                                    selectedIDs: $selectedAndroidFiles,
                                     onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
                                     onSpecialAction: { loadAndroidFiles() },
                                     onNavigate: { navigateAndroidFolder(to: file) }
@@ -100,6 +103,7 @@ struct ContentView: View {
                                         FileRowView(
                                             file: $file,
                                             isFocused: androidPaneFocused,
+                                            selectedIDs: $selectedAndroidFiles,
                                             onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
                                             onSpecialAction: { loadAndroidFiles() },
                                             onNavigate: { navigateAndroidFolder(to: file) }
@@ -157,6 +161,7 @@ struct ContentView: View {
     struct FileRowView: View {
         @Binding var file: FileEntry
         var isFocused: Bool
+        var selectedIDs: Binding<Set<FileEntry.ID>>
         var onFocusChange: () -> Void
         var onSpecialAction: () -> Void
         var onNavigate: () -> Void
@@ -180,8 +185,14 @@ struct ContentView: View {
             .background(file.isSelected ? (isFocused ? Color.blue.opacity(0.3) : Color.gray.opacity(0.3)) : Color.clear)
             .contentShape(Rectangle())
             .onTapGesture {
+                file.isSelected.toggle()
+                if file.isSelected {
+                    selectedIDs.wrappedValue.insert(file.id)
+                } else {
+                    selectedIDs.wrappedValue.remove(file.id)
+                }
                 onFocusChange()
-
+                
                 if file.isSpecialAction {
                     onSpecialAction()
                 } else if file.name == ".." || file.isFolder {
