@@ -309,6 +309,7 @@ struct ContentView: View {
 
                 // Only add ".." if not at the root alias
                 if !androidRootAliases.contains(resolvedPath) {
+                    print("resolvedPath: \(resolvedPath) androidRootAliases: \(androidRootAliases)")
                     entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
                 }
 
