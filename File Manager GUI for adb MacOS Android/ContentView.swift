@@ -9,9 +9,10 @@ import SwiftUI
 import Foundation
 
 struct ContentView: View {
+    private static let androidRoot = "/sdcard"
     @State private var currentMacPath = ConfigManager.shared.macStartPath
-    @State private var currentAndroidPath: String = "/sdcard"
-    @State private var androidRootAliases: [String] = ["/sdcard"]
+    @State private var currentAndroidPath: String = androidRoot
+    @State private var androidRootAliases: [String] = [androidRoot]
     @State private var macFiles: [FileEntry] = []
     @State private var androidFiles: [FileEntry] = []
     @State private var selectedMacFiles = Set<FileEntry.ID>()
