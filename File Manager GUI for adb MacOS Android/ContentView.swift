@@ -285,8 +285,14 @@ struct ContentView: View {
                 // Add resolvedPath as a root alias if it's the initial launch
                 if androidRootAliases.isEmpty {
                     androidRootAliases.append(resolvedPath)
+                    print("Added initial androidRootAlias: \(resolvedPath)")
                 }
 
+                if !androidRootAliases.contains(resolvedPath) {
+                    androidRootAliases.append(resolvedPath)
+                    print("Dynamically added root alias: \(resolvedPath)")
+                }
+                
                 print("Resolved Android Path: \(resolvedPath)")
 
                 let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
