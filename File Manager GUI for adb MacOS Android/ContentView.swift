@@ -382,6 +382,9 @@ struct ContentView: View {
 
     func copyToAndroid() {
         let macPath = ConfigManager.shared.macStartPath
+        
+        print ("selectedMacFiles \(selectedMacFiles)")
+
 
         for fileID in selectedMacFiles {
             if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
@@ -411,6 +414,8 @@ struct ContentView: View {
 
     func copyToMac() {
         let macPath = ConfigManager.shared.macStartPath
+
+        print ("selectedAndroidFiles \(selectedAndroidFiles)")
 
         for fileID in selectedAndroidFiles {
             if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
