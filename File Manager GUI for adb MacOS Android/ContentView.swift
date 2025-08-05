@@ -231,9 +231,13 @@ struct ContentView: View {
             } catch {
                 errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
                 print("Failed to load \(currentMacPath): \(error.localizedDescription)")
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                    errorMessage = nil
+                }
+
                 currentMacPath = ConfigManager.shared.macStartPath
                 loadMacFiles()  // Retry with default start path
-
             }
         }
     }
