@@ -11,11 +11,11 @@ import Foundation
 class ConfigManager: ObservableObject {
     static let shared = ConfigManager()
     
-    @Published var adbPath: String = "/opt/homebrew/bin/adb"
-    @Published var macStartPath: String = FileManager.default.homeDirectoryForCurrentUser.path
-    @Published var defaultLanguage: String = "en"
-    @Published var hideHiddenFiles: Bool = true  // New parameter with default fallback
-
+    @Published var adbPath: String = "/opt/homebrew/bin/adb" //adb_path
+    @Published var macStartPath: String = FileManager.default.homeDirectoryForCurrentUser.path //mac_start_path
+    @Published var defaultLanguage: String = "en" //default_language
+    @Published var hideHiddenFiles: Bool = true //hide_hidden_files
+    @Published var androidBrowseAboveSDCard: Bool = false //android_browse_above_sdcard
 
     init() {
         loadConfig()
@@ -58,6 +58,16 @@ class ConfigManager: ObservableObject {
                     }
                 }
 
+                if let androidBrowseAbove = json["android_browse_above_sdcard"] {
+                    if let boolValue = androidBrowseAbove as? Bool {
+                        androidBrowseAboveSDCard = boolValue
+                    } else if let stringValue = androidBrowseAbove as? String {
+                        androidBrowseAboveSDCard = (stringValue.lowercased() == "true")
+                    } else {
+                        androidBrowseAboveSDCard = false  // fallback if type is unexpected
+                    }
+                }
+                
             }
         } catch {
             print("Failed to load config.json at \(configURL.path): \(error.localizedDescription)")
