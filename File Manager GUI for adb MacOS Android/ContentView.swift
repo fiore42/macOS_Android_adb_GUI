@@ -386,15 +386,15 @@ struct ContentView: View {
  
 
     func copyToAndroid() {
-        let macPath = ConfigManager.shared.macStartPath
-        
-        print ("selectedMacFiles \(selectedMacFiles)")
+        let macPath = currentMacPath
+        let androidPath = currentAndroidPath
 
+        print ("selectedMacFiles \(selectedMacFiles)")
 
         for fileID in selectedMacFiles {
             if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
                 let sourcePath = macPath + "/" + file.name
-                let destinationPath = Self.androidRoot + "/" + file.name
+                let destinationPath = androidPath + "/" + file.name
                 do {
                     copyOutput = "Copying \(file.name)..."
                     let output = try runADBCommand(arguments: ["push", sourcePath, destinationPath])
@@ -409,6 +409,8 @@ struct ContentView: View {
             }
         }
         
+        loadAndroidFiles()  // Refresh Android side after copy
+        
         // Clear copyOutput after a short delay (optional)
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             copyOutput = nil
@@ -418,13 +420,14 @@ struct ContentView: View {
 
 
     func copyToMac() {
-        let macPath = ConfigManager.shared.macStartPath
+        let macPath = currentMacPath
+        let androidPath = currentAndroidPath
 
         print ("selectedAndroidFiles \(selectedAndroidFiles)")
 
         for fileID in selectedAndroidFiles {
             if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-                let sourcePath = Self.androidRoot + "/" + file.name
+                let sourcePath = androidPath + "/" + file.name
                 let destinationPath = macPath + "/" + file.name
                 do {
                     copyOutput = "Copying \(file.name)..."
@@ -440,6 +443,9 @@ struct ContentView: View {
                 }
             }
         }
+        
+        loadMacFiles()  // Refresh Mac side after copy
+        
         // Clear copyOutput after a short delay (optional)
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             copyOutput = nil
