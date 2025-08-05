@@ -322,7 +322,7 @@ struct ContentView: View {
                     let tokens = line.split(omittingEmptySubsequences: true, whereSeparator: { $0 == " " || $0 == "\t" })
                     guard tokens.count >= 8 else { continue }  // Ensure at least 9 tokens (standard ls -la format)
 
-                    let fileName = tokens[8...].joined(separator: " ")
+                    let fileName = tokens[7...].joined(separator: " ")
 
                     if fileName == "." || fileName == ".." {
                         continue  // Skip explicit . and .. entries from adb
