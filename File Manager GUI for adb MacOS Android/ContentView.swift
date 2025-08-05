@@ -36,10 +36,17 @@ struct ContentView: View {
                         .multilineTextAlignment(.center)
                     List {
                         ForEach($macFiles) { $file in
-                            FileRowView(file: $file, isFocused: macPaneFocused, onFocusChange: {
-                                macPaneFocused = true
-                                androidPaneFocused = false
-                            })
+                            FileRowView(
+                                file: $file,
+                                isFocused: macPaneFocused,
+                                onFocusChange: {
+                                    macPaneFocused = true
+                                    androidPaneFocused = false
+                                },
+                                onSpecialAction: {
+                                    loadMacFiles()
+                                }
+                            )
                         }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -63,10 +70,17 @@ struct ContentView: View {
                     } else {
                         List {
                             ForEach($androidFiles) { $file in
-                                FileRowView(file: $file, isFocused: androidPaneFocused, onFocusChange: {
-                                    macPaneFocused = false
-                                    androidPaneFocused = true
-                                })
+                                FileRowView(
+                                    file: $file,
+                                    isFocused: androidPaneFocused,
+                                    onFocusChange: {
+                                        macPaneFocused = false
+                                        androidPaneFocused = true
+                                    },
+                                    onSpecialAction: {
+                                        loadAndroidFiles()
+                                    }
+                                )
 
                             }
                         }
@@ -114,6 +128,7 @@ struct ContentView: View {
         @Binding var file: FileEntry
         var isFocused: Bool
         var onFocusChange: () -> Void
+        var onSpecialAction: () -> Void
 
         var body: some View {
             HStack {
@@ -134,12 +149,12 @@ struct ContentView: View {
             .background(file.isSelected ? (isFocused ? Color.blue.opacity(0.3) : Color.gray.opacity(0.3)) : Color.clear)
             .contentShape(Rectangle())
             .onTapGesture {
-                onFocusChange()  // Any tap on the row will set focus
+                onFocusChange()
 
                 if file.isSpecialAction {
-                    // Special action tap
+                    onSpecialAction()  // <-- Trigger the special action
                 } else if file.name == ".." {
-                    // Navigate up
+                    // Navigate up (keep placeholder)
                 }
             }
         }
