@@ -40,7 +40,8 @@ struct ContentView: View {
                                 file: $file,
                                 isFocused: macPaneFocused,
                                 onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
-                                onSpecialAction: { loadMacFiles() }
+                                onSpecialAction: { loadMacFiles() },
+                                onNavigate: { navigateMacFolder(to: file) }
                             )
                         }
                         ScrollView {
@@ -50,7 +51,9 @@ struct ContentView: View {
                                         file: $file,
                                         isFocused: macPaneFocused,
                                         onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
-                                        onSpecialAction: { loadMacFiles() }
+                                        onSpecialAction: { loadMacFiles() },
+                                        onNavigate: { navigateMacFolder(to: file) }
+
                                     )
                                 }
                             }
@@ -82,7 +85,9 @@ struct ContentView: View {
                                     file: $file,
                                     isFocused: androidPaneFocused,
                                     onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
-                                    onSpecialAction: { loadAndroidFiles() }
+                                    onSpecialAction: { loadAndroidFiles() },
+                                    onNavigate: { navigateAndroidFolder(to: file) }
+
                                 )
                             }
                             ScrollView {
@@ -92,7 +97,8 @@ struct ContentView: View {
                                             file: $file,
                                             isFocused: androidPaneFocused,
                                             onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
-                                            onSpecialAction: { loadAndroidFiles() }
+                                            onSpecialAction: { loadAndroidFiles() },
+                                            onNavigate: { navigateAndroidFolder(to: file) }
                                         )
                                     }
                                 }
@@ -144,6 +150,7 @@ struct ContentView: View {
         var isFocused: Bool
         var onFocusChange: () -> Void
         var onSpecialAction: () -> Void
+        var onNavigate: () -> Void
 
         var body: some View {
             HStack {
@@ -167,9 +174,9 @@ struct ContentView: View {
                 onFocusChange()
 
                 if file.isSpecialAction {
-                    onSpecialAction()  // <-- Trigger the special action
-                } else if file.name == ".." {
-                    // Navigate up (keep placeholder)
+                    onSpecialAction()
+                } else if file.name == ".." || file.isFolder {
+                    onNavigate()
                 }
             }
         }
@@ -178,8 +185,18 @@ struct ContentView: View {
 
     
     func navigateMacFolder(to file: FileEntry) {
-        // Will implement navigation logic later
+        if file.name == ".." {
+            // Go up one level
+            if currentMacPath != "/" {
+                currentMacPath = URL(fileURLWithPath: currentMacPath).deletingLastPathComponent().path
+            }
+        } else if file.isFolder {
+            // Go into the folder
+            currentMacPath = currentMacPath + "/" + file.name
+        }
+        loadMacFiles()
     }
+
 
     func navigateAndroidFolder(to file: FileEntry) {
         // Will implement navigation logic later
