@@ -281,18 +281,12 @@ struct ContentView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
                 let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
-                currentAndroidPath = resolvedPath  // Always keep currentAndroidPath updated
-
-                // Add resolvedPath as a root alias if it's the initial launch
-                if androidRootAliases.isEmpty {
+                
+                if currentAndroidPath == Self.androidRoot {
                     androidRootAliases.append(resolvedPath)
-                    print("Added initial androidRootAlias: \(resolvedPath)")
+                    print("Added alias androidRootAlias: \(resolvedPath)")
                 }
-
-//                if !androidRootAliases.contains(resolvedPath) {
-//                    androidRootAliases.append(resolvedPath)
-//                    print("Dynamically added root alias: \(resolvedPath)")
-//                }
+                currentAndroidPath = resolvedPath  // Always keep currentAndroidPath updated
                 
                 print("Resolved Android Path: \(resolvedPath)")
 
