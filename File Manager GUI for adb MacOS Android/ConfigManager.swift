@@ -40,7 +40,13 @@ class ConfigManager: ObservableObject {
                     }
                 }
                 if let language = json["default_language"] as? String {
-                    defaultLanguage = language
+                    let langFileURL = configURL.deletingLastPathComponent().appendingPathComponent("languages/\(language).json")
+                    if FileManager.default.fileExists(atPath: langFileURL.path) {
+                        defaultLanguage = language
+                    } else {
+                        print("Language file \(langFileURL.lastPathComponent) not found in languages/. Falling back to 'en'.")
+                        defaultLanguage = "en"
+                    }
                 }
                 if let hideHidden = json["hide_hidden_files"] {
                     if let boolValue = hideHidden as? Bool {
