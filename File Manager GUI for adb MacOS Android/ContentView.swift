@@ -298,6 +298,11 @@ struct ContentView: View {
                     if line.starts(with: "total") { continue }  // Skip summary line
                     let tokens = line.split(separator: " ", omittingEmptySubsequences: true)
                     guard let fileName = tokens.last else { continue }
+                    
+                    if fileName == "." || fileName == ".." {
+                        continue  // Skip explicit . and .. entries from adb
+                    }
+                    
                     let isDir = tokens[0].starts(with: "d")
                     entries.append(FileEntry(name: String(fileName), isFolder: isDir))
                 }
