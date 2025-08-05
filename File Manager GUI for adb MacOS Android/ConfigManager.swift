@@ -42,9 +42,16 @@ class ConfigManager: ObservableObject {
                 if let language = json["default_language"] as? String {
                     defaultLanguage = language
                 }
-                if let hideHidden = json["hide_hidden_files"] as? Bool {
-                    hideHiddenFiles = hideHidden
+                if let hideHidden = json["hide_hidden_files"] {
+                    if let boolValue = hideHidden as? Bool {
+                        hideHiddenFiles = boolValue
+                    } else if let stringValue = hideHidden as? String {
+                        hideHiddenFiles = (stringValue.lowercased() == "true")
+                    } else {
+                        hideHiddenFiles = false  // fallback if type is unexpected
+                    }
                 }
+
             }
         } catch {
             print("Failed to load config.json at \(configURL.path): \(error.localizedDescription)")
