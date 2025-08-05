@@ -56,21 +56,7 @@ struct ContentView: View {
                             }
                         }
                     }
-//                    List {
-//                        ForEach($macFiles) { $file in
-//                            FileRowView(
-//                                file: $file,
-//                                isFocused: macPaneFocused,
-//                                onFocusChange: {
-//                                    macPaneFocused = true
-//                                    androidPaneFocused = false
-//                                },
-//                                onSpecialAction: {
-//                                    loadMacFiles()
-//                                }
-//                            )
-//                        }
-//                    }
+
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
                 }
@@ -113,22 +99,6 @@ struct ContentView: View {
                             }
                         }
 
-//                        List {
-//                            ForEach($androidFiles) { $file in
-//                                FileRowView(
-//                                    file: $file,
-//                                    isFocused: androidPaneFocused,
-//                                    onFocusChange: {
-//                                        macPaneFocused = false
-//                                        androidPaneFocused = true
-//                                    },
-//                                    onSpecialAction: {
-//                                        loadAndroidFiles()
-//                                    }
-//                                )
-//
-//                            }
-//                        }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
                     }
@@ -248,50 +218,6 @@ struct ContentView: View {
     }
 
     
-//    func loadMacFiles() {
-//        do {
-//            var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
-//
-//            
-//            if currentMacPath != "/" {
-//                files.insert("..", at: 0)
-//            }
-//            var entries = files.map { fileName in
-//                FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
-//            }
-//
-//            entries = entries.sortedWithFoldersFirst()
-//
-//            entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
-//
-//            macFiles = entries
-//        } catch {
-//            errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
-//        }
-//    }
-
-    
-//    func loadMacFiles() {
-//        do {
-//            var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
-//            if currentMacPath != "/" {
-//                files.insert("..", at: 0)
-//            }
-//            var entries = files.map { fileName in
-//                FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
-//            }
-//
-//            entries = entries.sortedWithFoldersFirst()
-//
-//            entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
-//
-//            macFiles = entries
-//
-//        } catch {
-//            errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
-//        }
-//    }
-    
     func resolveAndroidPath(initialPath: String) throws -> String {
         var currentPath = initialPath
         while true {
@@ -345,50 +271,6 @@ struct ContentView: View {
             }
         }
     }
-
-
-//    func loadAndroidFiles() {
-//        androidFiles = []
-//        showingAndroidFileList = false
-//
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-//            do {
-//                let resolvedPath = try resolveAndroidPath(initialPath: "/sdcard")
-//                if !androidRootAliases.contains(resolvedPath) {
-//                    androidRootAliases.append(resolvedPath)
-//                }
-//                print("Resolved Android Path: \(resolvedPath)")
-//
-//                let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
-//                var entries: [FileEntry] = []
-//
-//                let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
-//
-//                for line in lines {
-//                    if line.starts(with: "total") { continue }  // Skip summary line
-//                    let tokens = line.split(separator: " ", omittingEmptySubsequences: true)
-//                    guard let fileName = tokens.last else { continue }
-//                    let isDir = tokens[0].starts(with: "d")
-//                    entries.append(FileEntry(name: String(fileName), isFolder: isDir))
-//                }
-//
-//                let isAtRootAlias = androidRootAliases.contains(resolvedPath)
-//                if !isAtRootAlias {
-//                    entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
-//                }
-//
-//                entries = entries.sortedWithFoldersFirst()
-//
-//                entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
-//
-//                androidFiles = entries
-//                
-//                showingAndroidFileList = true
-//            } catch {
-//                errorMessage = error.localizedDescription
-//            }
-//        }
-//    }
 
     func checkADBDevices() {
         do {
