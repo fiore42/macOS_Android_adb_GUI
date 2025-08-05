@@ -17,7 +17,10 @@ struct ContentView: View {
     @State private var androidFiles: [FileEntry] = []
     @State private var selectedMacFiles = Set<FileEntry.ID>()
     @State private var selectedAndroidFiles = Set<FileEntry.ID>()
+
     @State private var errorMessage: String?
+    @State private var copyOutput: String? = nil
+
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
     @State private var showingADBDevicesOutput = false
@@ -137,13 +140,16 @@ struct ContentView: View {
                 
             }
             .padding(.bottom, 5)
-            
-            // Error Message
-            if let errorMessage = errorMessage {
-                Text(errorMessage)
+            if let output = copyOutput { // Command Output
+                Text(output)
+                    .foregroundColor(.white)
+                    .padding()
+            } else if let error = errorMessage { // Error Message
+                Text(error)
                     .foregroundColor(.red)
                     .padding()
             }
+
         }
         .onAppear(perform: loadMacFiles)
     }
@@ -369,14 +375,24 @@ struct ContentView: View {
         for fileID in selectedMacFiles {
             if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
                 let sourcePath = macPath + "/" + file.name
-                let destinationPath = "/sdcard/" + file.name
+                let destinationPath = Self.androidRoot + "/" + file.name
                 do {
+                    copyOutput = "Copying \(file.name)..."
                     let output = try runADBCommand(arguments: ["push", sourcePath, destinationPath])
                     print(output)
+                    copyOutput = "Copied \(file.name)"
+
                 } catch {
                     errorMessage = error.localizedDescription
+                    copyOutput = nil
+
                 }
             }
+        }
+        
+        // Clear copyOutput after a short delay (optional)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            copyOutput = nil
         }
     }
 
@@ -387,15 +403,25 @@ struct ContentView: View {
 
         for fileID in selectedAndroidFiles {
             if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-                let sourcePath = "/sdcard/" + file.name
+                let sourcePath = Self.androidRoot + "/" + file.name
                 let destinationPath = macPath + "/" + file.name
                 do {
+                    copyOutput = "Copying \(file.name)..."
+
                     let output = try runADBCommand(arguments: ["pull", sourcePath, destinationPath])
                     print(output)
+                    copyOutput = "Copied \(file.name)"
+
                 } catch {
                     errorMessage = error.localizedDescription
+                    copyOutput = nil
+
                 }
             }
+        }
+        // Clear copyOutput after a short delay (optional)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            copyOutput = nil
         }
     }
 
