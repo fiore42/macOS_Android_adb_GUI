@@ -2,5 +2,5 @@
     "adb_path": "/opt/homebrew/bin/adb",
     "mac_start_path": "~/Downloads",
     "default_language": "en",
-    "hide_hidden_files": "true"
+    "hide_hidden_files": true
 }
