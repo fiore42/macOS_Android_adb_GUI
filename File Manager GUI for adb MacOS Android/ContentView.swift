@@ -229,7 +229,9 @@ struct ContentView: View {
 
                 macFiles = entries
             } catch {
-                errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
+                print("Failed to load \(currentMacPath): \(error.localizedDescription)")
+                currentMacPath = ConfigManager.shared.macStartPath
+                loadMacFiles()  // Retry with default start path
             }
         }
     }
