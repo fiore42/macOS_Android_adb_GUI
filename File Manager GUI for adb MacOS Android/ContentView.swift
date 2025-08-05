@@ -172,6 +172,11 @@ struct ContentView: View {
                     Image(systemName: file.isSelected ? "checkmark.square" : "square")
                         .onTapGesture {
                             file.isSelected.toggle()
+                            if file.isSelected {
+                                selectedIDs.wrappedValue.insert(file.id)
+                            } else {
+                                selectedIDs.wrappedValue.remove(file.id)
+                            }
                             onFocusChange()  // Ensure tap on checkbox focuses pane
                         }
                 } else {
