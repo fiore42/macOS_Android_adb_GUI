@@ -23,6 +23,9 @@ extension Array where Element == FileEntry {
         var files: [FileEntry] = []
 
         for entry in self {
+            if ConfigManager.shared.hideHiddenFiles && entry.name.starts(with: ".") {
+                continue  // Skip hidden files/folders
+            }
             if entry.name == ".." {
                 parentDir.append(entry)
             } else if entry.isFolder {

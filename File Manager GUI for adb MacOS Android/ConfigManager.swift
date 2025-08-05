@@ -5,7 +5,7 @@
 //  Created by Alfonso Fiore on 4/8/25.
 //
 
-import SwiftUI
+//import SwiftUI
 import Foundation
 
 class ConfigManager: ObservableObject {
@@ -14,6 +14,8 @@ class ConfigManager: ObservableObject {
     @Published var adbPath: String = "/opt/homebrew/bin/adb"
     @Published var macStartPath: String = FileManager.default.homeDirectoryForCurrentUser.path
     @Published var defaultLanguage: String = "en"
+    @Published var hideHiddenFiles: Bool = true  // New parameter with default fallback
+
 
     init() {
         loadConfig()
@@ -39,6 +41,9 @@ class ConfigManager: ObservableObject {
                 }
                 if let language = json["default_language"] as? String {
                     defaultLanguage = language
+                }
+                if let hideHidden = json["hide_hidden_files"] as? Bool {
+                    hideHiddenFiles = hideHidden
                 }
             }
         } catch {
