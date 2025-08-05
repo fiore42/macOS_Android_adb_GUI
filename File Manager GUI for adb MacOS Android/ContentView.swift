@@ -179,26 +179,51 @@ struct ContentView: View {
     }
     
     func loadMacFiles() {
-        do {
-            var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
+        macFiles = []  // Clear list immediately
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            do {
+                var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
 
-            
-            if currentMacPath != "/" {
-                files.insert("..", at: 0)
+                if currentMacPath != "/" {
+                    files.insert("..", at: 0)
+                }
+
+                var entries = files.map { fileName in
+                    FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
+                }
+
+                entries = entries.sortedWithFoldersFirst()
+                entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+
+                macFiles = entries
+            } catch {
+                errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
             }
-            var entries = files.map { fileName in
-                FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
-            }
-
-            entries = entries.sortedWithFoldersFirst()
-
-            entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
-
-            macFiles = entries
-        } catch {
-            errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
         }
     }
+
+    
+//    func loadMacFiles() {
+//        do {
+//            var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
+//
+//            
+//            if currentMacPath != "/" {
+//                files.insert("..", at: 0)
+//            }
+//            var entries = files.map { fileName in
+//                FileEntry(name: fileName, isFolder: isMacFolder(fileName: fileName))
+//            }
+//
+//            entries = entries.sortedWithFoldersFirst()
+//
+//            entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+//
+//            macFiles = entries
+//        } catch {
+//            errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
+//        }
+//    }
 
     
 //    func loadMacFiles() {
