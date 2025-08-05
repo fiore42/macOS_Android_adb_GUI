@@ -34,21 +34,43 @@ struct ContentView: View {
                     Text(LanguageManager.shared.localized("mac_files_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                    List {
-                        ForEach($macFiles) { $file in
+                    VStack(spacing: 0) {
+                        ForEach($macFiles.filter { $0.wrappedValue.isSpecialAction || $0.wrappedValue.name == ".." }) { $file in
                             FileRowView(
                                 file: $file,
                                 isFocused: macPaneFocused,
-                                onFocusChange: {
-                                    macPaneFocused = true
-                                    androidPaneFocused = false
-                                },
-                                onSpecialAction: {
-                                    loadMacFiles()
-                                }
+                                onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
+                                onSpecialAction: { loadMacFiles() }
                             )
                         }
+                        ScrollView {
+                            LazyVStack(spacing: 0) {
+                                ForEach($macFiles.filter { !$0.wrappedValue.isSpecialAction && $0.wrappedValue.name != ".." }) { $file in
+                                    FileRowView(
+                                        file: $file,
+                                        isFocused: macPaneFocused,
+                                        onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
+                                        onSpecialAction: { loadMacFiles() }
+                                    )
+                                }
+                            }
+                        }
                     }
+//                    List {
+//                        ForEach($macFiles) { $file in
+//                            FileRowView(
+//                                file: $file,
+//                                isFocused: macPaneFocused,
+//                                onFocusChange: {
+//                                    macPaneFocused = true
+//                                    androidPaneFocused = false
+//                                },
+//                                onSpecialAction: {
+//                                    loadMacFiles()
+//                                }
+//                            )
+//                        }
+//                    }
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
                 }
@@ -68,22 +90,45 @@ struct ContentView: View {
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
                     } else {
-                        List {
-                            ForEach($androidFiles) { $file in
+                        VStack(spacing: 0) {
+                            ForEach($androidFiles.filter { $0.wrappedValue.isSpecialAction || $0.wrappedValue.name == ".." }) { $file in
                                 FileRowView(
                                     file: $file,
                                     isFocused: androidPaneFocused,
-                                    onFocusChange: {
-                                        macPaneFocused = false
-                                        androidPaneFocused = true
-                                    },
-                                    onSpecialAction: {
-                                        loadAndroidFiles()
-                                    }
+                                    onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
+                                    onSpecialAction: { loadAndroidFiles() }
                                 )
-
+                            }
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach($androidFiles.filter { !$0.wrappedValue.isSpecialAction && $0.wrappedValue.name != ".." }) { $file in
+                                        FileRowView(
+                                            file: $file,
+                                            isFocused: androidPaneFocused,
+                                            onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
+                                            onSpecialAction: { loadAndroidFiles() }
+                                        )
+                                    }
+                                }
                             }
                         }
+
+//                        List {
+//                            ForEach($androidFiles) { $file in
+//                                FileRowView(
+//                                    file: $file,
+//                                    isFocused: androidPaneFocused,
+//                                    onFocusChange: {
+//                                        macPaneFocused = false
+//                                        androidPaneFocused = true
+//                                    },
+//                                    onSpecialAction: {
+//                                        loadAndroidFiles()
+//                                    }
+//                                )
+//
+//                            }
+//                        }
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
                     }
