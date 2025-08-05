@@ -320,7 +320,7 @@ struct ContentView: View {
                 for line in lines {
                     if line.starts(with: "total") { continue }  // Skip summary line
                     let tokens = line.split(omittingEmptySubsequences: true, whereSeparator: { $0 == " " || $0 == "\t" })
-                    guard tokens.count >= 9 else { continue }  // Ensure at least 9 tokens (standard ls -la format)
+                    guard tokens.count >= 8 else { continue }  // Ensure at least 9 tokens (standard ls -la format)
 
                     let fileName = tokens[8...].joined(separator: " ")
 
