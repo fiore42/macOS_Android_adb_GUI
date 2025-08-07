@@ -485,6 +485,27 @@ struct ContentView: View {
             }
         }
     }
+    
+    func getFileSize(direction: CopyDirection, path: String) -> Int64 {
+        switch direction {
+        case .macToAdr:
+            if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+               let size = attrs[.size] as? Int64 {
+                return size
+            }
+            return 0
+        case .adrToMac:
+            let command = "du -sb \(shellSafe(path)) | cut -f1"
+            do {
+                let output = try runadbCommand(arguments: ["shell", command])
+                return Int64(output.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
+            } catch {
+                return 0
+            }
+        }
+    }
+
+
 
     func copyFiles(direction: CopyDirection) {
         let macPath = currentMacPath
@@ -512,34 +533,106 @@ struct ContentView: View {
             print("selectedFiles \(selectedFiles)")
         }
 
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            for fileID in selectedFiles {
+//                if let file = sourceFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
+//                    let sourcePath = (direction == .macToAdr ? macPath : androidPath) + "/" + file.name
+//                    let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
+//
+//                    DispatchQueue.main.async {
+//                        GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(file.name)..."
+//                    }
+//
+//                    do {
+//                        let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
+//                        if errorVerbosity >= .verbose {
+//                            print(output)
+//                        }
+//                        DispatchQueue.main.async {
+//                            GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copied")) \(file.name)"
+//                        }
+//                    } catch {
+//                        DispatchQueue.main.async {
+//                            GlobalState.shared.errorMessage = error.localizedDescription
+//                            GlobalState.shared.outputMessage = nil
+//                        }
+//                    }
+//                }
+//            }
+//
+//            // Refresh the destination side
+//            DispatchQueue.main.async {
+//                refresh()
+//                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
+//                    GlobalState.shared.outputMessage = nil
+//                }
+//            }
+//        }
+
         DispatchQueue.global(qos: .userInitiated).async {
+            var totalSize: Int64 = 0
+            var copiedSize: Int64 = 0
+            var filePaths: [(source: String, destination: String)] = []
+
             for fileID in selectedFiles {
                 if let file = sourceFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
                     let sourcePath = (direction == .macToAdr ? macPath : androidPath) + "/" + file.name
                     let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
+                    totalSize += getFileSize(direction: direction, path: sourcePath)
+                    filePaths.append((source: sourcePath, destination: destinationPath))
+                }
+            }
 
+            let startTime = Date()
+            let timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+                copiedSize = filePaths.reduce(0) { sum, pair in
+                    sum + getFileSize(direction: direction == .macToAdr ? .adrToMac : .macToAdr, path: pair.destination)
+                }
+                let elapsed = Date().timeIntervalSince(startTime)
+                let speed = copiedSize > 0 && elapsed > 0 ? Double(copiedSize) / elapsed : 0
+                let remaining = totalSize - copiedSize
+                let etaSeconds = speed > 0 ? Double(remaining) / speed : 0
+
+                let sizeUnit = totalSize < 1_000_000 ? "KB" : "MB"
+                let speedUnit = speed < 1_000_000 ? "KB/sec" : "MB/sec"
+
+                let displayCopied = Double(copiedSize) / (totalSize < 1_000_000 ? 1_000 : 1_000_000)
+                let displayTotal = Double(totalSize) / (totalSize < 1_000_000 ? 1_000 : 1_000_000)
+                let displaySpeed = speed / (speed < 1_000_000 ? 1_000 : 1_000_000)
+
+                let etaMin = Int(etaSeconds) / 60
+                let etaSec = Int(etaSeconds) % 60
+
+                DispatchQueue.main.async {
+                    GlobalState.shared.outputMessage = String(format: "%.0f of %.0f%@ copied. ETA %d:%02d. %.1f %@", displayCopied, displayTotal, sizeUnit, etaMin, etaSec, displaySpeed, speedUnit)
+                }
+            }
+
+            RunLoop.main.add(timer, forMode: .common)
+
+            for (sourcePath, destinationPath) in filePaths {
+                let fileName = URL(fileURLWithPath: sourcePath).lastPathComponent
+
+                DispatchQueue.main.async {
+                    GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(fileName)..."
+                }
+
+                do {
+                    let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
+                    if errorVerbosity >= .verbose { print(output) }
                     DispatchQueue.main.async {
-                        GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(file.name)..."
+                        GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copied")) \(fileName)"
                     }
-
-                    do {
-                        let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
-                        if errorVerbosity >= .verbose {
-                            print(output)
-                        }
-                        DispatchQueue.main.async {
-                            GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copied")) \(file.name)"
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            GlobalState.shared.errorMessage = error.localizedDescription
-                            GlobalState.shared.outputMessage = nil
-                        }
+                } catch {
+                    DispatchQueue.main.async {
+                        GlobalState.shared.errorMessage = error.localizedDescription
+                        GlobalState.shared.outputMessage = nil
                     }
                 }
             }
 
-            // Refresh the destination side
+            timer.invalidate()
+
             DispatchQueue.main.async {
                 refresh()
                 DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
@@ -547,6 +640,7 @@ struct ContentView: View {
                 }
             }
         }
+        
     }
 
     

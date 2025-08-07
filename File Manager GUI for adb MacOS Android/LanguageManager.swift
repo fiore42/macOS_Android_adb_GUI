@@ -16,6 +16,9 @@ class LanguageManager: ObservableObject {
     init() {
         loadLanguage(code: ConfigManager.shared.defaultLanguage)
     }
+    
+    //note: by definition these errors cannot be taken from the language file,
+    //since they are errors about the file being missing!
 
     func loadLanguage(code: String) {
         let languageFile = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("languages/\(code).json")
