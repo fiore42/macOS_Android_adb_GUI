@@ -204,11 +204,11 @@ struct ContentView: View {
                             file.isSelected.toggle()
                             if file.isSelected {
                                 selectedIDs.wrappedValue.insert(file.id)
-                                print("Added file to selection: \(file.id)")
+                                print("Count [\(selectedIDs.wrappedValue.count)]. Added file to selection: \(file.id)")
 
                             } else {
                                 selectedIDs.wrappedValue.remove(file.id)
-                                print("Removed file to selection: \(file.id)")
+                                print("Count [\(selectedIDs.wrappedValue.count)]. Removed file to selection: \(file.id)")
                             }
                             onFocusChange()  // Ensure tap on checkbox focuses pane
                         }
@@ -227,10 +227,10 @@ struct ContentView: View {
                     file.isSelected.toggle()
                     if file.isSelected {
                         selectedIDs.wrappedValue.insert(file.id)
-                        print("Added file to selection: \(file.id)")
+                        print("Count [\(selectedIDs.wrappedValue.count)]. Added file to selection: \(file.id)")
                     } else {
                         selectedIDs.wrappedValue.remove(file.id)
-                        print("Removed file to selection: \(file.id)")
+                        print("Count [\(selectedIDs.wrappedValue.count)]. Removed file to selection: \(file.id)")
                     }
                     onFocusChange()
                     
