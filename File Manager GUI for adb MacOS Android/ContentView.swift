@@ -28,7 +28,7 @@ struct ContentView: View {
 
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
-    @State private var showingADBDevicesOutput = false
+    @State private var showingadbDevicesOutput = false
     @State private var adbDevicesOutput: String = ""
     @State private var buttonsEnabled = false
     @State private var showingAndroidFileList = false
@@ -92,12 +92,12 @@ struct ContentView: View {
                 .padding(.leading, 5)
                 .frame(minWidth: 0, maxWidth: .infinity)
                 
-                // Right Pane - Android Files or ADB Devices Output
+                // Right Pane - Android Files or adb Devices Output
                 VStack(alignment: .leading) {
                     Text(LanguageManager.shared.localized("android_files_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                    if showingADBDevicesOutput && !showingAndroidFileList {
+                    if showingadbDevicesOutput && !showingAndroidFileList {
                         ScrollView([.vertical, .horizontal]) {
                             Text(adbDevicesOutput)
                                 .padding()
@@ -146,7 +146,7 @@ struct ContentView: View {
             // Action Buttons
             HStack {
                 Button(LanguageManager.shared.localized("adb_devices_button")) {
-                    checkADBDevices()
+                    checkadbDevices()
                 }
                 Button(LanguageManager.shared.localized("load_android_files_button")) {
                     loadAndroidFiles()
@@ -158,27 +158,6 @@ struct ContentView: View {
                 }
                 .disabled(!activePaneHasSelection)
 
-                
-//                Button(LanguageManager.shared.localized("copy_to_android_button")) {
-//                    copyFiles(direction: .macToAdr)
-//                }
-//                .disabled(!buttonsEnabled)
-//
-//                Button(LanguageManager.shared.localized("copy_to_mac_button")) {
-//                    copyFiles(direction: .adrToMac)
-//                }
-//                .disabled(!buttonsEnabled)
-
-                
-//                Button(LanguageManager.shared.localized("copy_to_android_button")) {
-//                    copyToAndroid()
-//                }
-//                .disabled(!buttonsEnabled)
-//                
-//                Button(LanguageManager.shared.localized("copy_to_mac_button")) {
-//                    copyToMac()
-//                }
-//                .disabled(!buttonsEnabled)
                 
             }
             .padding(.bottom, 5)
@@ -322,18 +301,7 @@ struct ContentView: View {
         }
     }
 
-    
-//    func resolveAndroidPath(initialPath: String) throws -> String {
-//        var currentPath = initialPath
-//        while true {
-//            let output = try runADBCommand(arguments: ["shell", "readlink", "-f", currentPath]).trimmingCharacters(in: .whitespacesAndNewlines)
-//            if output.isEmpty || output == currentPath {
-//                return currentPath
-//            } else {
-//                currentPath = output
-//            }
-//        }
-//    }
+
     
     
     func shellSafe(_ path: String) -> String {
@@ -351,7 +319,7 @@ struct ContentView: View {
         while true {
             let safePath = shellSafe(currentPath)
             let fullCommand = "readlink -f \(safePath)"
-            let output = try runADBCommand(arguments: ["shell", fullCommand])
+            let output = try runadbCommand(arguments: ["shell", fullCommand])
                 .trimmingCharacters(in: .whitespacesAndNewlines)
 
             if output.isEmpty || output == currentPath {
@@ -379,9 +347,9 @@ struct ContentView: View {
                 print("Resolved Android Path: \(resolvedPath)")
 
                 let safeResolvedPath = shellSafe(resolvedPath)
-                let lsOutput = try runADBCommand(arguments: ["shell", "ls -la \(safeResolvedPath)"])
+                let lsOutput = try runadbCommand(arguments: ["shell", "ls -la \(safeResolvedPath)"])
 
-//                let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
+//                let lsOutput = try runadbCommand(arguments: ["shell", "ls", "-la", resolvedPath])
                 var entries: [FileEntry] = []
 
                 let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
@@ -420,9 +388,9 @@ struct ContentView: View {
     }
 
 
-    func checkADBDevices() {
+    func checkadbDevices() {
         do {
-            let output = try runADBCommand(arguments: ["devices"])
+            let output = try runadbCommand(arguments: ["devices"])
             let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
             let deviceLines = lines.dropFirst() // skip header line
             
@@ -446,10 +414,10 @@ struct ContentView: View {
                 buttonsEnabled = false
                 showingAndroidFileList = false
             }
-            showingADBDevicesOutput = true
+            showingadbDevicesOutput = true
         } catch {
-            adbDevicesOutput = "ADB Error: \(error.localizedDescription)"
-            showingADBDevicesOutput = true
+            adbDevicesOutput = "adb Error: \(error.localizedDescription)"
+            showingadbDevicesOutput = true
             buttonsEnabled = false
             showingAndroidFileList = false
         }
@@ -490,7 +458,7 @@ struct ContentView: View {
                     }
 
                     do {
-                        let output = try runADBCommand(arguments: adbCommand(sourcePath, destinationPath))
+                        let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
                         print(output)
                         DispatchQueue.main.async {
                             copyOutput = "Copied \(file.name)"
@@ -516,98 +484,11 @@ struct ContentView: View {
 
     
 
-//    func copyToAndroid() {
-//        let macPath = currentMacPath
-//        let androidPath = currentAndroidPath
-//
-//        print("selectedMacFiles \(selectedMacFiles)")
-//
-//        DispatchQueue.global(qos: .userInitiated).async {
-//            for fileID in selectedMacFiles {
-//                if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-//                    let sourcePath = macPath + "/" + file.name
-//                    let destinationPath = androidPath + "/" + file.name
-//
-//                    DispatchQueue.main.async {
-//                        copyOutput = "Copying \(file.name)..."
-//                    }
-//
-//                    do {
-//                        let output = try runADBCommand(arguments: ["push", sourcePath, destinationPath])
-//                        print(output)
-//                        DispatchQueue.main.async {
-//                            copyOutput = "Copied \(file.name)"
-//                        }
-//                    } catch {
-//                        DispatchQueue.main.async {
-//                            errorMessage = error.localizedDescription
-//                            copyOutput = nil
-//                        }
-//                    }
-//                }
-//            }
-//
-//            // Refresh Android side after copy on main thread
-//            DispatchQueue.main.async {
-//                loadAndroidFiles()
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-//                    copyOutput = nil
-//                }
-//            }
-//        }
-//    }
-//
-//
-//
-//
-//    func copyToMac() {
-//        let macPath = currentMacPath
-//        let androidPath = currentAndroidPath
-//
-//        print("selectedAndroidFiles \(selectedAndroidFiles)")
-//
-//        DispatchQueue.global(qos: .userInitiated).async {
-//            for fileID in selectedAndroidFiles {
-//                if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-//                    let sourcePath = androidPath + "/" + file.name
-//                    let destinationPath = macPath + "/" + file.name
-//
-//                    DispatchQueue.main.async {
-//                        copyOutput = "Copying \(file.name)..."
-//                    }
-//
-//                    do {
-//                        let output = try runADBCommand(arguments: ["pull", sourcePath, destinationPath])
-//                        print(output)
-//                        DispatchQueue.main.async {
-//                            copyOutput = "Copied \(file.name)"
-//                        }
-//                    } catch {
-//                        DispatchQueue.main.async {
-//                            errorMessage = error.localizedDescription
-//                            copyOutput = nil
-//                        }
-//                    }
-//                }
-//            }
-//
-//            // Refresh Mac side after copy on main thread
-//            DispatchQueue.main.async {
-//                loadMacFiles()
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-//                    copyOutput = nil
-//                }
-//            }
-//        }
-//    }
-
-
-
 
 }
 
 @main
-struct ADBFileManagerApp: App {
+struct adbFileManagerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

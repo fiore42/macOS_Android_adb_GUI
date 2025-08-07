@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 
-func runADBCommand(arguments: [String]) throws -> String {
+func runadbCommand(arguments: [String]) throws -> String {
     let adbPath = ConfigManager.shared.adbPath
     let adbURL = URL(fileURLWithPath: adbPath)
 
