@@ -28,7 +28,9 @@ func runadbCommand(arguments: [String]) throws -> String {
     process.standardError = pipe
 
     do {
-        print("Running command: \(adbPath) \(arguments.joined(separator: " "))")
+        if errorVerbosity >= .verbose {
+            print("Running command: \(adbPath) \(arguments.joined(separator: " "))")
+        }
         try process.run()
     } catch {
         throw NSError(domain: "ADBError", code: 2, userInfo: [
@@ -42,7 +44,9 @@ func runadbCommand(arguments: [String]) throws -> String {
             NSLocalizedDescriptionKey: "Failed to read adb output as UTF-8."
         ])
     }
-    print("Command output: \(output)")
+    if errorVerbosity >= .verbose {
+        print("Command output: \(output)")
+    }
 
     return output
 }

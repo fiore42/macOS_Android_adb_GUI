@@ -297,9 +297,10 @@ struct ContentView: View {
                 macFiles = entries
             } catch {
                 
-                // LanguageManager.shared.localized("mac_files_label")
                 errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
-                print("Failed to load \(currentMacPath): \(error.localizedDescription)")
+                if errorVerbosity >= .verbose {
+                    print("Failed to load \(currentMacPath): \(error.localizedDescription)")
+                }
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
                     errorMessage = nil
@@ -318,7 +319,9 @@ struct ContentView: View {
         let escaped = path.replacingOccurrences(of: "'", with: "'\\''")
         let quoted = "'\(escaped)'"
         if quoted != path {
-            print("shellSafe: escaped input path for shell: \(path) → \(quoted)")
+            if errorVerbosity >= .verbose {
+                print("shellSafe: escaped input path for shell: \(path) → \(quoted)")
+            }
         }
         return quoted
     }
@@ -350,11 +353,15 @@ struct ContentView: View {
                 
                 if currentAndroidPath == Self.androidRoot {
                     androidRootAliases.append(resolvedPath)
-                    print("Added alias androidRootAlias: \(resolvedPath)")
+                    if errorVerbosity >= .verbose {
+                        print("Added alias androidRootAlias: \(resolvedPath)")
+                    }
                 }
                 currentAndroidPath = resolvedPath  // Always keep currentAndroidPath updated
                 
-                print("Resolved Android Path: \(resolvedPath)")
+                if errorVerbosity >= .verbose {
+                    print("Resolved Android Path: \(resolvedPath)")
+                }
 
                 let safeResolvedPath = shellSafe(resolvedPath)
                 let lsOutput = try runadbCommand(arguments: ["shell", "ls -la \(safeResolvedPath)"])
@@ -382,7 +389,10 @@ struct ContentView: View {
 
                 // Only add ".." if not at the root alias
                 if !androidRootAliases.contains(resolvedPath) || ConfigManager.shared.androidBrowseAboveSDCard || resolvedPath != "/" {
-                    print("resolvedPath: \(resolvedPath) androidRootAliases: \(androidRootAliases)")
+                    if errorVerbosity >= .verbose {
+                        print("resolvedPath: \(resolvedPath) androidRootAliases: \(androidRootAliases)")
+                    }
+
                     entries.insert(FileEntry(name: "..", isFolder: true), at: 0)
                 }
 
@@ -455,7 +465,9 @@ struct ContentView: View {
             refresh = loadMacFiles
         }
         
-        print("selectedFiles \(selectedFiles)")
+        if errorVerbosity >= .debug {
+            print("selectedFiles \(selectedFiles)")
+        }
 
         DispatchQueue.global(qos: .userInitiated).async {
             for fileID in selectedFiles {
@@ -469,7 +481,9 @@ struct ContentView: View {
 
                     do {
                         let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
-                        print(output)
+                        if errorVerbosity >= .verbose {
+                            print(output)
+                        }
                         DispatchQueue.main.async {
                             outputMessage = "Copied \(file.name)"
                         }

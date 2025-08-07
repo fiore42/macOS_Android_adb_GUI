@@ -44,7 +44,9 @@ class ConfigManager: ObservableObject {
                     if FileManager.default.fileExists(atPath: langFileURL.path) {
                         defaultLanguage = language
                     } else {
-                        print("Language file \(langFileURL.lastPathComponent) not found in languages/. Falling back to 'en'.")
+                        if errorVerbosity >= .minimal {
+                            print("Language file \(langFileURL.lastPathComponent) not found in languages/. Falling back to 'en'.")
+                        }
                         defaultLanguage = "en"
                     }
                 }
@@ -70,7 +72,9 @@ class ConfigManager: ObservableObject {
                 
             }
         } catch {
-            print("Failed to load config.json at \(configURL.path): \(error.localizedDescription)")
+            if errorVerbosity >= .minimal {
+                print("Failed to load config.json at \(configURL.path): \(error.localizedDescription)")
+            }
         }
     }
 }

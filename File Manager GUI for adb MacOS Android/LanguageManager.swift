@@ -28,7 +28,9 @@ class LanguageManager: ObservableObject {
             let data = try Data(contentsOf: languageFile)
             if let dict = try JSONSerialization.jsonObject(with: data) as? [String: String] {
                 translations = dict
-                print("Loaded language: \(code)")
+                if errorVerbosity >= .minimal {
+                    print("Loaded language: \(code)")
+                }
             } else {
                 fatalError("Invalid language JSON structure in \(code).json.")
             }
