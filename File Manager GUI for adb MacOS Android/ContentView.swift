@@ -8,6 +8,11 @@
 import SwiftUI
 import Foundation
 
+enum CopyDirection {
+    case macToAdr
+    case adrToMac
+}
+
 struct ContentView: View {
     private static let androidRoot = "/sdcard"
     @State private var currentMacPath = ConfigManager.shared.macStartPath
@@ -133,14 +138,25 @@ struct ContentView: View {
                 .disabled(!buttonsEnabled)
                 
                 Button(LanguageManager.shared.localized("copy_to_android_button")) {
-                    copyToAndroid()
+                    copyFiles(direction: .macToAdr)
                 }
                 .disabled(!buttonsEnabled)
-                
+
                 Button(LanguageManager.shared.localized("copy_to_mac_button")) {
-                    copyToMac()
+                    copyFiles(direction: .adrToMac)
                 }
                 .disabled(!buttonsEnabled)
+
+                
+//                Button(LanguageManager.shared.localized("copy_to_android_button")) {
+//                    copyToAndroid()
+//                }
+//                .disabled(!buttonsEnabled)
+//                
+//                Button(LanguageManager.shared.localized("copy_to_mac_button")) {
+//                    copyToMac()
+//                }
+//                .disabled(!buttonsEnabled)
                 
             }
             .padding(.bottom, 5)
@@ -417,26 +433,42 @@ struct ContentView: View {
         }
     }
 
- 
-
-    func copyToAndroid() {
+    func copyFiles(direction: CopyDirection) {
         let macPath = currentMacPath
         let androidPath = currentAndroidPath
 
-        print("selectedMacFiles \(selectedMacFiles)")
+        let selectedFiles: Set<FileEntry.ID>
+        let sourceFiles: [FileEntry]
+        let adbCommand: (String, String) -> [String]
+        let refresh: () -> Void
+
+        switch direction {
+        case .macToAdr:
+            selectedFiles = selectedMacFiles
+            sourceFiles = macFiles
+            adbCommand = { src, dst in ["push", src, dst] }
+            refresh = loadAndroidFiles
+        case .adrToMac:
+            selectedFiles = selectedAndroidFiles
+            sourceFiles = androidFiles
+            adbCommand = { src, dst in ["pull", src, dst] }
+            refresh = loadMacFiles
+        }
+        
+        print("selectedFiles \(selectedFiles)")
 
         DispatchQueue.global(qos: .userInitiated).async {
-            for fileID in selectedMacFiles {
-                if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-                    let sourcePath = macPath + "/" + file.name
-                    let destinationPath = androidPath + "/" + file.name
+            for fileID in selectedFiles {
+                if let file = sourceFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
+                    let sourcePath = (direction == .macToAdr ? macPath : androidPath) + "/" + file.name
+                    let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
 
                     DispatchQueue.main.async {
                         copyOutput = "Copying \(file.name)..."
                     }
 
                     do {
-                        let output = try runADBCommand(arguments: ["push", sourcePath, destinationPath])
+                        let output = try runADBCommand(arguments: adbCommand(sourcePath, destinationPath))
                         print(output)
                         DispatchQueue.main.async {
                             copyOutput = "Copied \(file.name)"
@@ -450,9 +482,9 @@ struct ContentView: View {
                 }
             }
 
-            // Refresh Android side after copy on main thread
+            // Refresh the destination side
             DispatchQueue.main.async {
-                loadAndroidFiles()
+                refresh()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                     copyOutput = nil
                 }
@@ -460,49 +492,92 @@ struct ContentView: View {
         }
     }
 
+    
 
-
-
-    func copyToMac() {
-        let macPath = currentMacPath
-        let androidPath = currentAndroidPath
-
-        print("selectedAndroidFiles \(selectedAndroidFiles)")
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            for fileID in selectedAndroidFiles {
-                if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-                    let sourcePath = androidPath + "/" + file.name
-                    let destinationPath = macPath + "/" + file.name
-
-                    DispatchQueue.main.async {
-                        copyOutput = "Copying \(file.name)..."
-                    }
-
-                    do {
-                        let output = try runADBCommand(arguments: ["pull", sourcePath, destinationPath])
-                        print(output)
-                        DispatchQueue.main.async {
-                            copyOutput = "Copied \(file.name)"
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            errorMessage = error.localizedDescription
-                            copyOutput = nil
-                        }
-                    }
-                }
-            }
-
-            // Refresh Mac side after copy on main thread
-            DispatchQueue.main.async {
-                loadMacFiles()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    copyOutput = nil
-                }
-            }
-        }
-    }
+//    func copyToAndroid() {
+//        let macPath = currentMacPath
+//        let androidPath = currentAndroidPath
+//
+//        print("selectedMacFiles \(selectedMacFiles)")
+//
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            for fileID in selectedMacFiles {
+//                if let file = macFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
+//                    let sourcePath = macPath + "/" + file.name
+//                    let destinationPath = androidPath + "/" + file.name
+//
+//                    DispatchQueue.main.async {
+//                        copyOutput = "Copying \(file.name)..."
+//                    }
+//
+//                    do {
+//                        let output = try runADBCommand(arguments: ["push", sourcePath, destinationPath])
+//                        print(output)
+//                        DispatchQueue.main.async {
+//                            copyOutput = "Copied \(file.name)"
+//                        }
+//                    } catch {
+//                        DispatchQueue.main.async {
+//                            errorMessage = error.localizedDescription
+//                            copyOutput = nil
+//                        }
+//                    }
+//                }
+//            }
+//
+//            // Refresh Android side after copy on main thread
+//            DispatchQueue.main.async {
+//                loadAndroidFiles()
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+//                    copyOutput = nil
+//                }
+//            }
+//        }
+//    }
+//
+//
+//
+//
+//    func copyToMac() {
+//        let macPath = currentMacPath
+//        let androidPath = currentAndroidPath
+//
+//        print("selectedAndroidFiles \(selectedAndroidFiles)")
+//
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            for fileID in selectedAndroidFiles {
+//                if let file = androidFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
+//                    let sourcePath = androidPath + "/" + file.name
+//                    let destinationPath = macPath + "/" + file.name
+//
+//                    DispatchQueue.main.async {
+//                        copyOutput = "Copying \(file.name)..."
+//                    }
+//
+//                    do {
+//                        let output = try runADBCommand(arguments: ["pull", sourcePath, destinationPath])
+//                        print(output)
+//                        DispatchQueue.main.async {
+//                            copyOutput = "Copied \(file.name)"
+//                        }
+//                    } catch {
+//                        DispatchQueue.main.async {
+//                            errorMessage = error.localizedDescription
+//                            copyOutput = nil
+//                        }
+//                    }
+//                }
+//            }
+//
+//            // Refresh Mac side after copy on main thread
+//            DispatchQueue.main.async {
+//                loadMacFiles()
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+//                    copyOutput = nil
+//                }
+//            }
+//        }
+//    }
 
 
 
