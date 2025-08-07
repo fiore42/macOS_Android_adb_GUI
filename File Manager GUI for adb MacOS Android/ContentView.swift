@@ -439,10 +439,9 @@ struct ContentView: View {
                 }
 
                 entries = entries.sortedWithFoldersFirst()
-                entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+                entries.insert(FileEntry(name: LanguageManager.shared.localized("refresh"), isFolder: false, isSpecialAction: true), at: 0)
 
                 androidFiles = entries
-                //showingAndroidFileList = true
             } catch {
                 GlobalState.shared.errorMessage = error.localizedDescription
             }
