@@ -31,10 +31,10 @@ struct ContentView: View {
 
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
-    @State private var showingadbDevicesOutput = false
-    @State private var adbDevicesOutput: String = ""
+    //@State private var showingadbDevicesOutput = false
+    //@State private var adbDevicesOutput: String = ""
     @State private var buttonsEnabled = false
-    @State private var showingAndroidFileList = false
+    //@State private var showingAndroidFileList = false
     @State private var macPaneFocused: Bool = true
     @State private var androidPaneFocused: Bool = false
     
@@ -98,7 +98,7 @@ struct ContentView: View {
                 //                    if showingadbDevicesOutput && !showingAndroidFileList {
 
                 
-                // Right Pane - Android Files or adb Devices Output
+                // Right Pane - Android Files
                 VStack(alignment: .leading) {
                     Text(LanguageManager.shared.localized("android_files_label"))
                         .frame(maxWidth: .infinity)
@@ -340,7 +340,7 @@ struct ContentView: View {
     
     func loadAndroidFiles() {
         androidFiles = []
-        showingAndroidFileList = false
+        //showingAndroidFileList = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
                 let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
@@ -394,13 +394,19 @@ struct ContentView: View {
                 entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
 
                 androidFiles = entries
-                showingAndroidFileList = true
+                //showingAndroidFileList = true
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
     }
 
+    
+//    errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
+
+//    DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
+//        errorMessage = nil
+//    }
 
     func checkadbDevices() {
         do {
@@ -411,29 +417,38 @@ struct ContentView: View {
             let authorizedDevices = deviceLines.filter { $0.contains("\tdevice") }
             let unauthorizedDevices = deviceLines.filter { $0.contains("\tunauthorized") }
 
-            if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
-                adbDevicesOutput = LanguageManager.shared.localized("no_device_found")
-                buttonsEnabled = false
-                showingAndroidFileList = false
-            } else if authorizedDevices.count > 1 {
-                adbDevicesOutput = LanguageManager.shared.localized("multiple_authorized_devices")
-                buttonsEnabled = false
-                showingAndroidFileList = false
-            } else if authorizedDevices.count == 1 {
-                adbDevicesOutput = LanguageManager.shared.localized("ok_ready_to_load")
+            if authorizedDevices.count == 1 {
+                successMessage = LanguageManager.shared.localized("ok_ready_to_load")
                 buttonsEnabled = true
-                showingAndroidFileList = false
-            } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
-                adbDevicesOutput = LanguageManager.shared.localized("no_authorized_device_found")
+                //showingAndroidFileList = false
+            } else if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
+                errorMessage = LanguageManager.shared.localized("no_device_found")
                 buttonsEnabled = false
-                showingAndroidFileList = false
+                //showingAndroidFileList = false
+            } else if authorizedDevices.count > 1 {
+                errorMessage = LanguageManager.shared.localized("multiple_authorized_devices")
+                buttonsEnabled = false
+                //showingAndroidFileList = false
+            } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
+                errorMessage = LanguageManager.shared.localized("no_authorized_device_found")
+                buttonsEnabled = false
+                //showingAndroidFileList = false
             }
-            showingadbDevicesOutput = true
+            //showingadbDevicesOutput = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
+                errorMessage = nil
+                successMessage = nil
+            }
+
         } catch {
-            adbDevicesOutput = "adb Error: \(error.localizedDescription)"
-            showingadbDevicesOutput = true
+            errorMessage = "adb Error: \(error.localizedDescription)"
+            //showingadbDevicesOutput = true
             buttonsEnabled = false
-            showingAndroidFileList = false
+            //showingAndroidFileList = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
+                errorMessage = nil
+            }
         }
     }
 
