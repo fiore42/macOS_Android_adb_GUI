@@ -11,7 +11,8 @@
     "no_device_found": "NO device found",
     "no_authorized_device_found": "NO authorized device found",
     "ok_ready_to_copy": "OK! Ready to load Android",
-    "multiple_authorized_devices": "ERROR. Multiple authorized devices"
+    "multiple_authorized_devices": "ERROR. Multiple authorized devices",
+    "refresh": "[ Refresh ]"
 
 }
 

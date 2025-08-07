@@ -292,10 +292,12 @@ struct ContentView: View {
                 }
 
                 entries = entries.sortedWithFoldersFirst()
-                entries.insert(FileEntry(name: "[ Refresh ]", isFolder: false, isSpecialAction: true), at: 0)
+                entries.insert(FileEntry(name: LanguageManager.shared.localized("refresh"), isFolder: false, isSpecialAction: true), at: 0)
 
                 macFiles = entries
             } catch {
+                
+                // LanguageManager.shared.localized("mac_files_label")
                 errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
                 print("Failed to load \(currentMacPath): \(error.localizedDescription)")
 
