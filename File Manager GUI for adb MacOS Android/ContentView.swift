@@ -144,13 +144,16 @@ struct ContentView: View {
             
             // Action Buttons
             HStack {
-                Button(LanguageManager.shared.localized("adb_devices_button")) {
-                    checkadbDevices()
-                }
+//                Button(LanguageManager.shared.localized("adb_devices_button")) {
+//                    checkadbDevices()
+//                }
                 Button(LanguageManager.shared.localized("load_android_files_button")) {
-                    loadAndroidFiles()
+                    checkadbDevices()
+                    if buttonsEnabled {
+                        loadAndroidFiles()
+                    }
                 }
-                .disabled(!buttonsEnabled)
+//                .disabled(!buttonsEnabled)
                 
                 Button(copyButtonText) {
                     copyFiles(direction: copyButtonDirection)
