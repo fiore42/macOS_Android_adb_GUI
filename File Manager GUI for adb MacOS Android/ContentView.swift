@@ -298,7 +298,7 @@ struct ContentView: View {
             } catch {
                 
                 // LanguageManager.shared.localized("mac_files_label")
-                errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
+                errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
                 print("Failed to load \(currentMacPath): \(error.localizedDescription)")
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
