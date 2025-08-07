@@ -13,6 +13,22 @@ enum CopyDirection {
     case adrToMac
 }
 
+struct WindowAccessor: NSViewRepresentable {
+    var onWindowAvailable: (NSWindow) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            if let window = view.window {
+                self.onWindowAvailable(window)
+            }
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
 struct ContentView: View {
     private static let androidRoot = "/sdcard"
     
@@ -33,10 +49,7 @@ struct ContentView: View {
 
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
-    //@State private var showingadbDevicesOutput = false
-    //@State private var adbDevicesOutput: String = ""
     @State private var copyEnabled = false
-    //@State private var showingAndroidFileList = false
     @State private var macPaneFocused: Bool = true
     @State private var androidPaneFocused: Bool = false
     
@@ -98,9 +111,6 @@ struct ContentView: View {
                 }
                 .padding(.leading, 5)
                 .frame(minWidth: 0, maxWidth: .infinity)
-
-                //                    if showingadbDevicesOutput && !showingAndroidFileList {
-
                 
                 // Right Pane - Android Files
                 VStack(alignment: .leading) {
@@ -148,16 +158,12 @@ struct ContentView: View {
             
             // Action Buttons
             HStack {
-//                Button(LanguageManager.shared.localized("adb_devices_button")) {
-//                    checkadbDevices()
-//                }
                 Button(LanguageManager.shared.localized("load_android_files_button")) {
                     checkadbDevices()
                     if copyEnabled {
                         loadAndroidFiles()
                     }
                 }
-//                .disabled(!copyEnabled)
                 
                 Button(copyButtonText) {
                     copyFiles(direction: copyButtonDirection)
@@ -184,6 +190,11 @@ struct ContentView: View {
 
         }
         .onAppear(perform: loadMacFiles)
+        .background(
+            WindowAccessor { window in
+                window.title = "My Custom Title"
+            }
+        )
     }
 
     struct FileRowView: View {
@@ -396,7 +407,6 @@ struct ContentView: View {
                 let safeResolvedPath = shellSafe(resolvedPath)
                 let lsOutput = try runadbCommand(arguments: ["shell", "ls -la \(safeResolvedPath)"])
 
-//                let lsOutput = try runadbCommand(arguments: ["shell", "ls", "-la", resolvedPath])
                 var entries: [FileEntry] = []
 
                 let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
@@ -438,12 +448,6 @@ struct ContentView: View {
         }
     }
 
-    
-//    errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
-
-//    DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-//        errorMessage = nil
-//    }
 
     func checkadbDevices() {
         do {
@@ -457,21 +461,16 @@ struct ContentView: View {
             if authorizedDevices.count == 1 {
                 GlobalState.shared.successMessage = LanguageManager.shared.localized("ok_ready_to_load")
                 copyEnabled = true
-                //showingAndroidFileList = false
             } else if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
                 GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_device_found")
                 copyEnabled = false
-                //showingAndroidFileList = false
             } else if authorizedDevices.count > 1 {
                 GlobalState.shared.errorMessage = LanguageManager.shared.localized("multiple_authorized_devices")
                 copyEnabled = false
-                //showingAndroidFileList = false
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
                 GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_authorized_device_found")
                 copyEnabled = false
-                //showingAndroidFileList = false
             }
-            //showingadbDevicesOutput = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
                 GlobalState.shared.errorMessage = nil
@@ -480,9 +479,7 @@ struct ContentView: View {
 
         } catch {
             GlobalState.shared.errorMessage = "adb Error: \(error.localizedDescription)"
-            //showingadbDevicesOutput = true
             copyEnabled = false
-            //showingAndroidFileList = false
             DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
                 GlobalState.shared.errorMessage = nil
             }
