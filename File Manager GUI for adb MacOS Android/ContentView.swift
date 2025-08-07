@@ -285,10 +285,37 @@ struct ContentView: View {
     }
 
     
+//    func resolveAndroidPath(initialPath: String) throws -> String {
+//        var currentPath = initialPath
+//        while true {
+//            let output = try runADBCommand(arguments: ["shell", "readlink", "-f", currentPath]).trimmingCharacters(in: .whitespacesAndNewlines)
+//            if output.isEmpty || output == currentPath {
+//                return currentPath
+//            } else {
+//                currentPath = output
+//            }
+//        }
+//    }
+    
+    
+    func shellSafe(_ path: String) -> String {
+        let escaped = path.replacingOccurrences(of: "'", with: "'\\''")
+        let quoted = "'\(escaped)'"
+        if quoted != path {
+            print("shellSafe: escaped input path for shell: \(path) → \(quoted)")
+        }
+        return quoted
+    }
+
     func resolveAndroidPath(initialPath: String) throws -> String {
         var currentPath = initialPath
+
         while true {
-            let output = try runADBCommand(arguments: ["shell", "readlink", "-f", currentPath]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let safePath = shellSafe(currentPath)
+            let fullCommand = "readlink -f \(safePath)"
+            let output = try runADBCommand(arguments: ["shell", fullCommand])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
             if output.isEmpty || output == currentPath {
                 return currentPath
             } else {
@@ -296,6 +323,7 @@ struct ContentView: View {
             }
         }
     }
+
     
     func loadAndroidFiles() {
         androidFiles = []
@@ -312,7 +340,10 @@ struct ContentView: View {
                 
                 print("Resolved Android Path: \(resolvedPath)")
 
-                let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
+                let safeResolvedPath = shellSafe(resolvedPath)
+                let lsOutput = try runADBCommand(arguments: ["shell", "ls -la \(safeResolvedPath)"])
+
+//                let lsOutput = try runADBCommand(arguments: ["shell", "ls", "-la", resolvedPath])
                 var entries: [FileEntry] = []
 
                 let lines = lsOutput.components(separatedBy: "\n").filter { !$0.isEmpty }
