@@ -24,9 +24,11 @@ struct ContentView: View {
     @State private var selectedMacFiles = Set<FileEntry.ID>()
     @State private var selectedAndroidFiles = Set<FileEntry.ID>()
 
-    @State private var errorMessage: String?
-    @State private var outputMessage: String? = nil
-    @State private var successMessage: String?
+    @ObservedObject private var global = GlobalState.shared
+
+//    @State private var errorMessage: String? = nil
+//    @State private var outputMessage: String? = nil
+//    @State private var successMessage: String? = nil
 
 
     @State private var showLogViewer: Bool = false
@@ -158,20 +160,20 @@ struct ContentView: View {
                 
             }
             .padding(.bottom, 5)
-            if let error = errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-                    .padding()
-            } else if let success = successMessage {
-                Text(success)
-                    .foregroundColor(.green)
-                    .padding()
-            } else if let output = outputMessage {
+            
+            if let output = global.outputMessage {
                 Text(output)
                     .foregroundColor(.white)
                     .padding()
+            } else if let success = global.successMessage {
+                Text(success)
+                    .foregroundColor(.green)
+                    .padding()
+            } else if let error = global.errorMessage {
+                Text(error)
+                    .foregroundColor(.red)
+                    .padding()
             }
-
 
         }
         .onAppear(perform: loadMacFiles)
@@ -291,13 +293,13 @@ struct ContentView: View {
                 macFiles = entries
             } catch {
                 
-                errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
+                GlobalState.shared.errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
                 if errorVerbosity >= .verbose {
                     print("Failed to load \(currentMacPath): \(error.localizedDescription)")
                 }
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                    errorMessage = nil
+                    GlobalState.shared.errorMessage = nil
                 }
 
                 currentMacPath = ConfigManager.shared.macStartPath
@@ -322,16 +324,31 @@ struct ContentView: View {
 
     func resolveAndroidPath(initialPath: String) throws -> String {
         var currentPath = initialPath
+        
+        var output: String = ""
+
 
         while true {
             let safePath = shellSafe(currentPath)
             let fullCommand = "readlink -f \(safePath)"
-            let output = try runadbCommand(arguments: ["shell", fullCommand])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            do {
+                output = try runadbCommand(arguments: ["shell", fullCommand])
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            } catch {
+                GlobalState.shared.errorMessage = error.localizedDescription
+                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
+                    GlobalState.shared.errorMessage = nil
+                }
+            }
 
+            
+
+            // If the path is already resolved or resolving failed, return it
             if output.isEmpty || output == currentPath {
                 return currentPath
             } else {
+                // Otherwise, try resolving further in the next loop
                 currentPath = output
             }
         }
@@ -396,7 +413,7 @@ struct ContentView: View {
                 androidFiles = entries
                 //showingAndroidFileList = true
             } catch {
-                errorMessage = error.localizedDescription
+                GlobalState.shared.errorMessage = error.localizedDescription
             }
         }
     }
@@ -418,36 +435,36 @@ struct ContentView: View {
             let unauthorizedDevices = deviceLines.filter { $0.contains("\tunauthorized") }
 
             if authorizedDevices.count == 1 {
-                successMessage = LanguageManager.shared.localized("ok_ready_to_load")
+                GlobalState.shared.successMessage = LanguageManager.shared.localized("ok_ready_to_load")
                 buttonsEnabled = true
                 //showingAndroidFileList = false
             } else if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
-                errorMessage = LanguageManager.shared.localized("no_device_found")
+                GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_device_found")
                 buttonsEnabled = false
                 //showingAndroidFileList = false
             } else if authorizedDevices.count > 1 {
-                errorMessage = LanguageManager.shared.localized("multiple_authorized_devices")
+                GlobalState.shared.errorMessage = LanguageManager.shared.localized("multiple_authorized_devices")
                 buttonsEnabled = false
                 //showingAndroidFileList = false
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
-                errorMessage = LanguageManager.shared.localized("no_authorized_device_found")
+                GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_authorized_device_found")
                 buttonsEnabled = false
                 //showingAndroidFileList = false
             }
             //showingadbDevicesOutput = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                errorMessage = nil
-                successMessage = nil
+                GlobalState.shared.errorMessage = nil
+                GlobalState.shared.successMessage = nil
             }
 
         } catch {
-            errorMessage = "adb Error: \(error.localizedDescription)"
+            GlobalState.shared.errorMessage = "adb Error: \(error.localizedDescription)"
             //showingadbDevicesOutput = true
             buttonsEnabled = false
             //showingAndroidFileList = false
             DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                errorMessage = nil
+                GlobalState.shared.errorMessage = nil
             }
         }
     }
@@ -485,7 +502,7 @@ struct ContentView: View {
                     let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
 
                     DispatchQueue.main.async {
-                        outputMessage = "\(LanguageManager.shared.localized("copying")) \(file.name)..."
+                        GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(file.name)..."
                     }
 
                     do {
@@ -494,12 +511,12 @@ struct ContentView: View {
                             print(output)
                         }
                         DispatchQueue.main.async {
-                            outputMessage = "\(LanguageManager.shared.localized("copied")) \(file.name)"
+                            GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copied")) \(file.name)"
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            errorMessage = error.localizedDescription
-                            outputMessage = nil
+                            GlobalState.shared.errorMessage = error.localizedDescription
+                            GlobalState.shared.outputMessage = nil
                         }
                     }
                 }
@@ -509,7 +526,7 @@ struct ContentView: View {
             DispatchQueue.main.async {
                 refresh()
                 DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                    outputMessage = nil
+                    GlobalState.shared.outputMessage = nil
                 }
             }
         }

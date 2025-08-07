@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		050B9EF92E44F91E0013C3BA /* GlobalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 050B9EF82E44F91E0013C3BA /* GlobalState.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		050B9EF82E44F91E0013C3BA /* GlobalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalState.swift; sourceTree = "<group>"; };
 		05D06ABC2E406E2800E432B7 /* File Manager GUI for adb MacOS Android.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "File Manager GUI for adb MacOS Android.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -34,6 +39,7 @@
 			children = (
 				05D06ABE2E406E2800E432B7 /* File Manager GUI for adb MacOS Android */,
 				05D06ABD2E406E2800E432B7 /* Products */,
+				050B9EF82E44F91E0013C3BA /* GlobalState.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -119,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				050B9EF92E44F91E0013C3BA /* GlobalState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
