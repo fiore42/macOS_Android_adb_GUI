@@ -34,6 +34,22 @@ struct ContentView: View {
     @State private var showingAndroidFileList = false
     @State private var macPaneFocused: Bool = true
     @State private var androidPaneFocused: Bool = false
+    
+    var activePaneHasSelection: Bool {
+        (macPaneFocused && !selectedMacFiles.isEmpty) ||
+        (androidPaneFocused && !selectedAndroidFiles.isEmpty)
+    }
+
+    var copyButtonText: String {
+        macPaneFocused
+            ? LanguageManager.shared.localized("copy_to_android_button")
+            : LanguageManager.shared.localized("copy_to_mac_button")
+    }
+
+    var copyButtonDirection: CopyDirection {
+        macPaneFocused ? .macToAdr : .adrToMac
+    }
+
 
     var body: some View {
         VStack {
@@ -137,15 +153,21 @@ struct ContentView: View {
                 }
                 .disabled(!buttonsEnabled)
                 
-                Button(LanguageManager.shared.localized("copy_to_android_button")) {
-                    copyFiles(direction: .macToAdr)
+                Button(copyButtonText) {
+                    copyFiles(direction: copyButtonDirection)
                 }
-                .disabled(!buttonsEnabled)
+                .disabled(!activePaneHasSelection)
 
-                Button(LanguageManager.shared.localized("copy_to_mac_button")) {
-                    copyFiles(direction: .adrToMac)
-                }
-                .disabled(!buttonsEnabled)
+                
+//                Button(LanguageManager.shared.localized("copy_to_android_button")) {
+//                    copyFiles(direction: .macToAdr)
+//                }
+//                .disabled(!buttonsEnabled)
+//
+//                Button(LanguageManager.shared.localized("copy_to_mac_button")) {
+//                    copyFiles(direction: .adrToMac)
+//                }
+//                .disabled(!buttonsEnabled)
 
                 
 //                Button(LanguageManager.shared.localized("copy_to_android_button")) {
