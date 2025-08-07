@@ -282,7 +282,9 @@ struct ContentView: View {
     }
     
     func loadMacFiles() {
-        macFiles = []  // Clear list immediately
+        macFiles = []  // Clear list of files
+        selectedMacFiles.removeAll() // Clear list of selected files
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
                 var files = try FileManager.default.contentsOfDirectory(atPath: currentMacPath)
@@ -364,8 +366,9 @@ struct ContentView: View {
 
     
     func loadAndroidFiles() {
-        androidFiles = []
-        //showingAndroidFileList = false
+        androidFiles = [] // Clear list of files
+        selectedMacFiles.removeAll() // Clear list of selected files
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
                 let resolvedPath = try resolveAndroidPath(initialPath: currentAndroidPath)
