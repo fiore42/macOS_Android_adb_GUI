@@ -94,21 +94,16 @@ struct ContentView: View {
                 }
                 .padding(.leading, 5)
                 .frame(minWidth: 0, maxWidth: .infinity)
+
+                //                    if showingadbDevicesOutput && !showingAndroidFileList {
+
                 
                 // Right Pane - Android Files or adb Devices Output
                 VStack(alignment: .leading) {
                     Text(LanguageManager.shared.localized("android_files_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                    if showingadbDevicesOutput && !showingAndroidFileList {
-                        ScrollView([.vertical, .horizontal]) {
-                            Text(adbDevicesOutput)
-                                .padding()
-                                .foregroundColor(adbDevicesOutput == LanguageManager.shared.localized("ok_ready_to_copy") ? .green : .red)
-                        }
-                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                        .clipped()
-                    } else {
+
                         VStack(spacing: 0) {
                             ForEach($androidFiles.filter { $0.wrappedValue.isSpecialAction || $0.wrappedValue.name == ".." }) { $file in
                                 FileRowView(
@@ -139,7 +134,6 @@ struct ContentView: View {
 
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                         .clipped()
-                    }
                 }
                 .padding(.leading, 5)
                 .frame(minWidth: 0, maxWidth: .infinity)
@@ -426,7 +420,7 @@ struct ContentView: View {
                 buttonsEnabled = false
                 showingAndroidFileList = false
             } else if authorizedDevices.count == 1 {
-                adbDevicesOutput = LanguageManager.shared.localized("ok_ready_to_copy")
+                adbDevicesOutput = LanguageManager.shared.localized("ok_ready_to_load")
                 buttonsEnabled = true
                 showingAndroidFileList = false
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
@@ -476,7 +470,7 @@ struct ContentView: View {
                     let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
 
                     DispatchQueue.main.async {
-                        outputMessage = "Copying \(file.name)..."
+                        outputMessage = "\(LanguageManager.shared.localized("copying")) \(file.name)..."
                     }
 
                     do {
@@ -485,7 +479,7 @@ struct ContentView: View {
                             print(output)
                         }
                         DispatchQueue.main.async {
-                            outputMessage = "Copied \(file.name)"
+                            outputMessage = "\(LanguageManager.shared.localized("copied")) \(file.name)"
                         }
                     } catch {
                         DispatchQueue.main.async {

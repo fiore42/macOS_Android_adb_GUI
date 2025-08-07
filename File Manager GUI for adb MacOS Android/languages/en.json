@@ -6,14 +6,15 @@
     "copy_to_mac_button": "Copy to Mac",
     "show_config_variables_button": "Show Config Variables",
     "language_button": "Language",
-    "build_auto_commit_log_title": "Build Auto-Commit Log",
     "adb_devices_button": "adb devices",
     "no_device_found": "NO device found",
     "no_authorized_device_found": "NO authorized device found",
-    "ok_ready_to_copy": "OK! Ready to load Android",
+    "ok_ready_to_load": "OK! Ready to load Android",
     "multiple_authorized_devices": "ERROR. Multiple authorized devices",
     "refresh": "[ Refresh ]",
-    "failed_load_mac_files": "Failed to load Mac files from"
+    "failed_load_mac_files": "Failed to load Mac files from",
+    "copying": "Copying",
+    "copied": "Copied"
 
 }
 
