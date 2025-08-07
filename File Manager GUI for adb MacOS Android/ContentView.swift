@@ -35,7 +35,7 @@ struct ContentView: View {
     @State private var commitLogContent: String = ""
     //@State private var showingadbDevicesOutput = false
     //@State private var adbDevicesOutput: String = ""
-    @State private var buttonsEnabled = false
+    @State private var copyEnabled = false
     //@State private var showingAndroidFileList = false
     @State private var macPaneFocused: Bool = true
     @State private var androidPaneFocused: Bool = false
@@ -70,6 +70,7 @@ struct ContentView: View {
                                 file: $file,
                                 isFocused: macPaneFocused,
                                 selectedIDs: $selectedMacFiles,
+                                selectionEnabled: copyEnabled,
                                 onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
                                 onSpecialAction: { loadMacFiles() },
                                 onNavigate: { navigateMacFolder(to: file) }
@@ -82,6 +83,7 @@ struct ContentView: View {
                                         file: $file,
                                         isFocused: macPaneFocused,
                                         selectedIDs: $selectedMacFiles,
+                                        selectionEnabled: copyEnabled,
                                         onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
                                         onSpecialAction: { loadMacFiles() },
                                         onNavigate: { navigateMacFolder(to: file) }
@@ -112,6 +114,7 @@ struct ContentView: View {
                                     file: $file,
                                     isFocused: androidPaneFocused,
                                     selectedIDs: $selectedAndroidFiles,
+                                    selectionEnabled: copyEnabled,
                                     onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
                                     onSpecialAction: { loadAndroidFiles() },
                                     onNavigate: { navigateAndroidFolder(to: file) }
@@ -125,6 +128,7 @@ struct ContentView: View {
                                             file: $file,
                                             isFocused: androidPaneFocused,
                                             selectedIDs: $selectedAndroidFiles,
+                                            selectionEnabled: copyEnabled,
                                             onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
                                             onSpecialAction: { loadAndroidFiles() },
                                             onNavigate: { navigateAndroidFolder(to: file) }
@@ -149,11 +153,11 @@ struct ContentView: View {
 //                }
                 Button(LanguageManager.shared.localized("load_android_files_button")) {
                     checkadbDevices()
-                    if buttonsEnabled {
+                    if copyEnabled {
                         loadAndroidFiles()
                     }
                 }
-//                .disabled(!buttonsEnabled)
+//                .disabled(!copyEnabled)
                 
                 Button(copyButtonText) {
                     copyFiles(direction: copyButtonDirection)
@@ -186,6 +190,7 @@ struct ContentView: View {
         @Binding var file: FileEntry
         var isFocused: Bool
         var selectedIDs: Binding<Set<FileEntry.ID>>
+        var selectionEnabled: Bool
         var onFocusChange: () -> Void
         var onSpecialAction: () -> Void
         var onNavigate: () -> Void
@@ -195,6 +200,7 @@ struct ContentView: View {
                 if !file.isSpecialAction && file.name != ".." {
                     Image(systemName: file.isSelected ? "checkmark.square" : "square")
                         .onTapGesture {
+                            guard selectionEnabled else { return }
                             file.isSelected.toggle()
                             if file.isSelected {
                                 selectedIDs.wrappedValue.insert(file.id)
@@ -217,20 +223,22 @@ struct ContentView: View {
             .background(file.isSelected ? (isFocused ? Color.blue.opacity(0.3) : Color.gray.opacity(0.3)) : Color.clear)
             .contentShape(Rectangle())
             .onTapGesture {
-                file.isSelected.toggle()
-                if file.isSelected {
-                    selectedIDs.wrappedValue.insert(file.id)
-                    print("Added file to selection: \(file.id)")
-                } else {
-                    selectedIDs.wrappedValue.remove(file.id)
-                    print("Removed file to selection: \(file.id)")
-                }
-                onFocusChange()
-                
-                if file.isSpecialAction {
-                    onSpecialAction()
-                } else if file.name == ".." || file.isFolder {
-                    onNavigate()
+                if selectionEnabled {
+                    file.isSelected.toggle()
+                    if file.isSelected {
+                        selectedIDs.wrappedValue.insert(file.id)
+                        print("Added file to selection: \(file.id)")
+                    } else {
+                        selectedIDs.wrappedValue.remove(file.id)
+                        print("Removed file to selection: \(file.id)")
+                    }
+                    onFocusChange()
+                    
+                    if file.isSpecialAction {
+                        onSpecialAction()
+                    } else if file.name == ".." || file.isFolder {
+                        onNavigate()
+                    }
                 }
             }
         }
@@ -447,19 +455,19 @@ struct ContentView: View {
 
             if authorizedDevices.count == 1 {
                 GlobalState.shared.successMessage = LanguageManager.shared.localized("ok_ready_to_load")
-                buttonsEnabled = true
+                copyEnabled = true
                 //showingAndroidFileList = false
             } else if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
                 GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_device_found")
-                buttonsEnabled = false
+                copyEnabled = false
                 //showingAndroidFileList = false
             } else if authorizedDevices.count > 1 {
                 GlobalState.shared.errorMessage = LanguageManager.shared.localized("multiple_authorized_devices")
-                buttonsEnabled = false
+                copyEnabled = false
                 //showingAndroidFileList = false
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
                 GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_authorized_device_found")
-                buttonsEnabled = false
+                copyEnabled = false
                 //showingAndroidFileList = false
             }
             //showingadbDevicesOutput = true
@@ -472,7 +480,7 @@ struct ContentView: View {
         } catch {
             GlobalState.shared.errorMessage = "adb Error: \(error.localizedDescription)"
             //showingadbDevicesOutput = true
-            buttonsEnabled = false
+            copyEnabled = false
             //showingAndroidFileList = false
             DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
                 GlobalState.shared.errorMessage = nil
