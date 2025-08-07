@@ -1,4 +1,5 @@
 {
+    "window_title": "File Manager GUI - copy between MacOS and Android with adb",
     "mac_files_label": "Mac Files",
     "android_files_label": "Android Files",
     "load_android_files_button": "Load Android Files",

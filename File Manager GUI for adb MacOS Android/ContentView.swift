@@ -192,7 +192,8 @@ struct ContentView: View {
         .onAppear(perform: loadMacFiles)
         .background(
             WindowAccessor { window in
-                window.title = "My Custom Title"
+                window.title = LanguageManager.shared.localized("window_title")
+
             }
         )
     }
