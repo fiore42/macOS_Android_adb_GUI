@@ -417,8 +417,9 @@ struct ContentView: View {
 
                 }
 
-                // Only add ".." if not at the root alias
-                if !androidRootAliases.contains(resolvedPath) || ConfigManager.shared.androidBrowseAboveSDCard || resolvedPath != "/" {
+                // Only add ".." if not at the root alias or browsing above root is allowed
+                if resolvedPath != "/" &&
+                   (ConfigManager.shared.androidBrowseAboveSDCard || !androidRootAliases.contains(resolvedPath)) {
                     if errorVerbosity >= .verbose {
                         print("resolvedPath: \(resolvedPath) androidRootAliases: \(androidRootAliases)")
                     }
