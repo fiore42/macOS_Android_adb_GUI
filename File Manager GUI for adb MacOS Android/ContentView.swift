@@ -375,7 +375,7 @@ struct ContentView: View {
     
     func loadAndroidFiles() {
         androidFiles = [] // Clear list of files
-        selectedMacFiles.removeAll() // Clear list of selected files
+        selectedAndroidFiles.removeAll() // Clear list of selected files
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             do {
