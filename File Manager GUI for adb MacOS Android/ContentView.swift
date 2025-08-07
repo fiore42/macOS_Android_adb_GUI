@@ -15,6 +15,7 @@ enum CopyDirection {
 
 struct ContentView: View {
     private static let androidRoot = "/sdcard"
+    
     @State private var currentMacPath = ConfigManager.shared.macStartPath
     @State private var currentAndroidPath: String = androidRoot
     @State private var androidRootAliases: [String] = [androidRoot]
@@ -24,7 +25,9 @@ struct ContentView: View {
     @State private var selectedAndroidFiles = Set<FileEntry.ID>()
 
     @State private var errorMessage: String?
-    @State private var copyOutput: String? = nil
+    @State private var outputMessage: String? = nil
+    @State private var successMessage: String?
+
 
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
@@ -161,15 +164,20 @@ struct ContentView: View {
                 
             }
             .padding(.bottom, 5)
-            if let output = copyOutput { // Command Output
-                Text(output)
-                    .foregroundColor(.white)
-                    .padding()
-            } else if let error = errorMessage { // Error Message
+            if let error = errorMessage {
                 Text(error)
                     .foregroundColor(.red)
                     .padding()
+            } else if let success = successMessage {
+                Text(success)
+                    .foregroundColor(.green)
+                    .padding()
+            } else if let output = outputMessage {
+                Text(output)
+                    .foregroundColor(.white)
+                    .padding()
             }
+
 
         }
         .onAppear(perform: loadMacFiles)
@@ -291,7 +299,7 @@ struct ContentView: View {
                 errorMessage = "Failed to load Mac files from \(currentMacPath): \(error.localizedDescription)"
                 print("Failed to load \(currentMacPath): \(error.localizedDescription)")
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
                     errorMessage = nil
                 }
 
@@ -454,19 +462,19 @@ struct ContentView: View {
                     let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
 
                     DispatchQueue.main.async {
-                        copyOutput = "Copying \(file.name)..."
+                        outputMessage = "Copying \(file.name)..."
                     }
 
                     do {
                         let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
                         print(output)
                         DispatchQueue.main.async {
-                            copyOutput = "Copied \(file.name)"
+                            outputMessage = "Copied \(file.name)"
                         }
                     } catch {
                         DispatchQueue.main.async {
                             errorMessage = error.localizedDescription
-                            copyOutput = nil
+                            outputMessage = nil
                         }
                     }
                 }
@@ -475,8 +483,8 @@ struct ContentView: View {
             // Refresh the destination side
             DispatchQueue.main.async {
                 refresh()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    copyOutput = nil
+                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
+                    outputMessage = nil
                 }
             }
         }
