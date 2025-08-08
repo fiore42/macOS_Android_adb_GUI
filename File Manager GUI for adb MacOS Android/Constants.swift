@@ -12,7 +12,7 @@ let messageDuration: TimeInterval = 5.0
 enum ErrorVerbosityLevel: Int, Comparable {
     case silent = 0        // No error messages
     case minimal = 1       // Only critical issues
-    case standard = 2      // Default user-facing errors
+    case normal = 2        // Default user-facing errors
     case verbose = 3       // Detailed debug info
     case debug = 4         // Very verbose logs for development
 

@@ -74,7 +74,7 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 // Left Pane - Mac Files
                 VStack(alignment: .leading) {
-                    Text(LanguageManager.shared.localized("mac_files_label"))
+                    Text(LanguageManager.shared.localized("mac_pane_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                     VStack(spacing: 0) {
@@ -114,7 +114,7 @@ struct ContentView: View {
                 
                 // Right Pane - Android Files
                 VStack(alignment: .leading) {
-                    Text(LanguageManager.shared.localized("android_files_label"))
+                    Text(LanguageManager.shared.localized("android_pane_label"))
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
 
@@ -323,14 +323,7 @@ struct ContentView: View {
                 macFiles = entries
             } catch {
                 
-                GlobalState.shared.errorMessage = "\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)"
-                if errorVerbosity >= .verbose {
-                    print("Failed to load \(currentMacPath): \(error.localizedDescription)")
-                }
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                    GlobalState.shared.errorMessage = nil
-                }
+                GlobalState.shared.setErrorMessage ("\(LanguageManager.shared.localized("failed_load_mac_files")) \(currentMacPath): \(error.localizedDescription)", verbosityLevel: .verbose)
 
                 currentMacPath = ConfigManager.shared.macStartPath
                 loadMacFiles()  // Retry with default start path
@@ -366,10 +359,9 @@ struct ContentView: View {
                 output = try runadbCommand(arguments: ["shell", fullCommand])
                     .trimmingCharacters(in: .whitespacesAndNewlines)
             } catch {
-                GlobalState.shared.errorMessage = error.localizedDescription
-                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                    GlobalState.shared.errorMessage = nil
-                }
+                
+                GlobalState.shared.setErrorMessage ("resolveAndroidPath error: \(error.localizedDescription)", verbosityLevel: .minimal)
+
             }
 
             
@@ -443,7 +435,7 @@ struct ContentView: View {
 
                 androidFiles = entries
             } catch {
-                GlobalState.shared.errorMessage = error.localizedDescription
+                GlobalState.shared.setErrorMessage ("loadAndroidFiles error: \(error.localizedDescription)", verbosityLevel: .minimal)
             }
         }
     }
@@ -459,30 +451,26 @@ struct ContentView: View {
             let unauthorizedDevices = deviceLines.filter { $0.contains("\tunauthorized") }
 
             if authorizedDevices.count == 1 {
-                GlobalState.shared.successMessage = LanguageManager.shared.localized("ok_ready_to_load")
+                GlobalState.shared.setSuccessMessage (LanguageManager.shared.localized("adb_devices_ok_ready_to_load"), verbosityLevel: .normal)
                 copyEnabled = true
             } else if authorizedDevices.isEmpty && unauthorizedDevices.isEmpty {
-                GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_device_found")
+                GlobalState.shared.setErrorMessage (LanguageManager.shared.localized("adb_devices_nok_no_device_found"), verbosityLevel: .normal)
                 copyEnabled = false
             } else if authorizedDevices.count > 1 {
-                GlobalState.shared.errorMessage = LanguageManager.shared.localized("multiple_authorized_devices")
+                GlobalState.shared.setErrorMessage (LanguageManager.shared.localized("adb_devices_nok_multiple_authorized_devices"), verbosityLevel: .normal)
                 copyEnabled = false
             } else if unauthorizedDevices.count >= 1 && authorizedDevices.isEmpty {
-                GlobalState.shared.errorMessage = LanguageManager.shared.localized("no_authorized_device_found")
+                GlobalState.shared.setErrorMessage (LanguageManager.shared.localized("adb_devices_nok_no_authorized_device_found"), verbosityLevel: .normal)
+                copyEnabled = false
+            } else {
+                GlobalState.shared.setErrorMessage (LanguageManager.shared.localized("adb_devices_nok_unknown_issue"), verbosityLevel: .normal)
                 copyEnabled = false
             }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                GlobalState.shared.errorMessage = nil
-                GlobalState.shared.successMessage = nil
-            }
+        
 
         } catch {
-            GlobalState.shared.errorMessage = "adb Error: \(error.localizedDescription)"
+            GlobalState.shared.setErrorMessage ("adb devices error: \(error.localizedDescription)", verbosityLevel: .minimal)
             copyEnabled = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                GlobalState.shared.errorMessage = nil
-            }
         }
     }
     
@@ -604,7 +592,9 @@ struct ContentView: View {
                 let etaSec = Int(etaSeconds) % 60
 
                 DispatchQueue.main.async {
-                    GlobalState.shared.outputMessage = String(format: "%.0f of %.0f%@ copied. ETA %d:%02d. %.1f %@", displayCopied, displayTotal, sizeUnit, etaMin, etaSec, displaySpeed, speedUnit)
+                    
+                    GlobalState.shared.setOutputMessage (String(format: "%.0f of %.0f%@ copied. ETA %d:%02d. %.1f %@", displayCopied, displayTotal, sizeUnit, etaMin, etaSec, displaySpeed, speedUnit), verbosityLevel: .verbose)
+
                 }
             }
 
@@ -614,19 +604,23 @@ struct ContentView: View {
                 let fileName = URL(fileURLWithPath: sourcePath).lastPathComponent
 
                 DispatchQueue.main.async {
-                    GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(fileName)..."
+                    GlobalState.shared.setOutputMessage ("\(LanguageManager.shared.localized("copying")) \(fileName)...", verbosityLevel: .verbose)
+
                 }
 
                 do {
                     let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
-                    if errorVerbosity >= .verbose { print(output) }
+                    if errorVerbosity >= .verbose {
+                        print(output)
+                    }
                     DispatchQueue.main.async {
-                        GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copied")) \(fileName)"
+                        GlobalState.shared.setOutputMessage ("\(LanguageManager.shared.localized("copied")) \(fileName)", verbosityLevel: .verbose)
                     }
                 } catch {
                     DispatchQueue.main.async {
-                        GlobalState.shared.errorMessage = error.localizedDescription
-                        GlobalState.shared.outputMessage = nil
+                        
+                        GlobalState.shared.setErrorMessage ("copyFiles error: \(error.localizedDescription)", verbosityLevel: .minimal)
+
                     }
                 }
             }
@@ -635,9 +629,7 @@ struct ContentView: View {
 
             DispatchQueue.main.async {
                 refresh()
-                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-                    GlobalState.shared.outputMessage = nil
-                }
+
             }
         }
         
