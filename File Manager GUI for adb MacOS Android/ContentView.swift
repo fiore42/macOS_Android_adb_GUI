@@ -42,11 +42,6 @@ struct ContentView: View {
 
     @ObservedObject private var global = GlobalState.shared
 
-//    @State private var errorMessage: String? = nil
-//    @State private var outputMessage: String? = nil
-//    @State private var successMessage: String? = nil
-
-
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
     @State private var copyEnabled = false
@@ -335,8 +330,6 @@ struct ContentView: View {
         }
     }
 
-
-    
     
     func shellSafe(_ path: String) -> String {
         let escaped = path.replacingOccurrences(of: "'", with: "'\\''")
@@ -367,8 +360,6 @@ struct ContentView: View {
                 GlobalState.shared.setErrorMessage ("resolveAndroidPath error: \(error.localizedDescription)", verbosityLevel: .minimal)
 
             }
-
-            
 
             // If the path is already resolved or resolving failed, return it
             if output.isEmpty || output == currentPath {
@@ -603,6 +594,9 @@ struct ContentView: View {
 
             DispatchQueue.main.async {
                 refresh()
+                if errorVerbosity >= .verbose {
+                    print("Clearing selection.")
+                }
                 clearSelection()
             }
         }
