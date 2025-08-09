@@ -534,7 +534,7 @@ struct ContentView: View {
             let unit = unitForTotalBytes(totalSize) // use total size to choose KB/MB/GB for both sides
 
             let progressTimer = DispatchSource.makeTimerSource(queue: .main)
-            progressTimer.schedule(deadline: .now() + 1, repeating: 5)
+            progressTimer.schedule(deadline: .now() + 1, repeating: 2)
 
             // Capture only the values you need (all value types anyway)
             progressTimer.setEventHandler { [totalSize, filePaths, direction] in
