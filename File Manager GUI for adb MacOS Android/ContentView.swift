@@ -500,22 +500,22 @@ struct ContentView: View {
         let selectedFiles: Set<FileEntry.ID>
         let sourceFiles: [FileEntry]
         let adbCommand: (String, String) -> [String]
-        let refresh: () -> Void
-        let clearSelection: () -> Void
+//        let refresh: () -> Void
+//        let clearSelection: () -> Void
 
         switch direction {
         case .macToAdr:
             selectedFiles = selectedMacFiles
             sourceFiles = macFiles
             adbCommand = { src, dst in ["push", src, dst] }
-            refresh = loadAndroidFiles
-            clearSelection = { selectedMacFiles.removeAll() }
+//            refresh = loadAndroidFiles
+//            clearSelection = { selectedMacFiles.removeAll() }
         case .adrToMac:
             selectedFiles = selectedAndroidFiles
             sourceFiles = androidFiles
             adbCommand = { src, dst in ["pull", src, dst] }
-            refresh = loadMacFiles
-            clearSelection = { selectedAndroidFiles.removeAll() }
+//            refresh = loadMacFiles
+//            clearSelection = { selectedAndroidFiles.removeAll() }
         }
         
         if errorVerbosity >= .debug {
@@ -593,11 +593,9 @@ struct ContentView: View {
             timer.invalidate()
 
             DispatchQueue.main.async {
-                refresh()
-                if errorVerbosity >= .verbose {
-                    print("Clearing selection.")
-                }
-                clearSelection()
+                loadAndroidFiles()
+                loadMacFiles()
+//                refresh()
             }
         }
         
