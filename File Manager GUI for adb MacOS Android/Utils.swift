@@ -50,6 +50,16 @@ func runProcess(executable: String, arguments: [String]) throws -> ProcessResult
     return ProcessResult(exitCode: process.terminationStatus, stdout: stdout, stderr: stderr)
 }
 
+func shellSafe(_ path: String) -> String {
+    let escaped = path.replacingOccurrences(of: "'", with: "'\\''")
+    let quoted = "'\(escaped)'"
+    if quoted != path {
+        if errorVerbosity >= .verbose {
+            print("shellSafe: escaped input path for shell: \(path) → \(quoted)")
+        }
+    }
+    return quoted
+}
 
 func getFileSize(direction: CopyDirection, path: String) -> Int64 {
     if errorVerbosity >= .debug {
@@ -97,17 +107,6 @@ func getFileSize(direction: CopyDirection, path: String) -> Int64 {
     }
 }
 
-func shellSafe(_ path: String) -> String {
-    let escaped = path.replacingOccurrences(of: "'", with: "'\\''")
-    let quoted = "'\(escaped)'"
-    if quoted != path {
-        if errorVerbosity >= .verbose {
-            print("shellSafe: escaped input path for shell: \(path) → \(quoted)")
-        }
-    }
-    return quoted
-}
-
 func unitForTotalBytes(_ total: Int64) -> ByteUnit {
     if total < Int64(1 << 20) {         // < 1 MB
         return .KB
@@ -120,18 +119,18 @@ func unitForTotalBytes(_ total: Int64) -> ByteUnit {
 
 /// Formats a byte count using a fixed unit (so copied & total use the same unit).
 func formatBytes(_ bytes: Int64, using unit: ByteUnit) -> (Double, String) {
-    (Double(bytes) / unit.divisor, unit.rawValue)
+    (Double(String(format: "%.2f", Double(bytes) / unit.divisor)) ?? 0, unit.rawValue)
 }
 
 /// Formats a bytes-per-second rate into KB/s, MB/s, or GB/s.
 func formatRate(_ bytesPerSecond: Double) -> (Double, String) {
     let absBps = abs(bytesPerSecond)
     if absBps < Double(1 << 20) {                      // < 1 MB/s
-        return (bytesPerSecond / 1024, "KB/sec")
+        return (Double(String(format: "%.2f", bytesPerSecond / 1024)) ?? 0, "KB/sec")
     } else if absBps < Double(1 << 30) {               // < 1 GB/s
-        return (bytesPerSecond / (1024 * 1024), "MB/sec")
+        return (Double(String(format: "%.2f", bytesPerSecond / (1024 * 1024))) ?? 0, "MB/sec")
     } else {
-        return (bytesPerSecond / (1024 * 1024 * 1024), "GB/sec")
+        return (Double(String(format: "%.2f", bytesPerSecond / (1024 * 1024 * 1024))) ?? 0, "GB/sec")
     }
 }
 
