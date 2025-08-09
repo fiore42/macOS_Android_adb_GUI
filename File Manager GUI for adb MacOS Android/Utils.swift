@@ -31,7 +31,7 @@ func getFileSize(direction: CopyDirection, path: String) -> Int64 {
         if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
             let size = attrs[.size] as? Int64 {
             if errorVerbosity >= .debug {
-                print("getFileSize attrs \(attrs)")
+                print("getFileSize size \(attrs[.size])")
             }
             return size
         }
