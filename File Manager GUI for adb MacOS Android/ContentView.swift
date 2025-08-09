@@ -302,6 +302,10 @@ struct ContentView: View {
     }
     
     func loadMacFiles() {
+        
+        if errorVerbosity >= .verbose {
+            print("loadMacFiles")
+        }
         macFiles = []  // Clear list of files
         selectedMacFiles.removeAll() // Clear list of selected files
 
@@ -378,6 +382,9 @@ struct ContentView: View {
 
     
     func loadAndroidFiles() {
+        if errorVerbosity >= .verbose {
+            print("loadAndroidFiles")
+        }
         androidFiles = [] // Clear list of files
         selectedAndroidFiles.removeAll() // Clear list of selected files
 
@@ -520,42 +527,6 @@ struct ContentView: View {
         if errorVerbosity >= .debug {
             print("selectedFiles \(selectedFiles)")
         }
-
-//        DispatchQueue.global(qos: .userInitiated).async {
-//            for fileID in selectedFiles {
-//                if let file = sourceFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-//                    let sourcePath = (direction == .macToAdr ? macPath : androidPath) + "/" + file.name
-//                    let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
-//
-//                    DispatchQueue.main.async {
-//                        GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(file.name)..."
-//                    }
-//
-//                    do {
-//                        let output = try runadbCommand(arguments: adbCommand(sourcePath, destinationPath))
-//                        if errorVerbosity >= .verbose {
-//                            print(output)
-//                        }
-//                        DispatchQueue.main.async {
-//                            GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copied")) \(file.name)"
-//                        }
-//                    } catch {
-//                        DispatchQueue.main.async {
-//                            GlobalState.shared.errorMessage = error.localizedDescription
-//                            GlobalState.shared.outputMessage = nil
-//                        }
-//                    }
-//                }
-//            }
-//
-//            // Refresh the destination side
-//            DispatchQueue.main.async {
-//                refresh()
-//                DispatchQueue.main.asyncAfter(deadline: .now() + messageDuration) {
-//                    GlobalState.shared.outputMessage = nil
-//                }
-//            }
-//        }
 
         DispatchQueue.global(qos: .userInitiated).async {
             var totalSize: Int64 = 0
