@@ -22,6 +22,10 @@ enum ByteUnit: String {
 }
 
 func getFileSize(direction: CopyDirection, path: String) -> Int64 {
+    if errorVerbosity >= .debug {
+        print("getFileSize direction \(direction)")
+    }
+
     switch direction {
     case .macToAdr:
         if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
