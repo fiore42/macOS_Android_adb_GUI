@@ -13,7 +13,8 @@
     "refresh": "[ Refresh ]",
     "failed_load_mac_files": "Failed to load Mac files from",
     "copying": "Copying",
-    "copied": "Copied"
+    "copied": "Copied",
+    "already_exists": "File already exists:"
 
 }
 

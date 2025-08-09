@@ -144,3 +144,19 @@ func computeSpeed(prevBytes: Int64, prevTime: Date, currentBytes: Int64, current
     }
     return bps
 }
+
+func destinationExists(direction: CopyDirection, path: String) -> Bool {
+    switch direction {
+    case .macToAdr:
+        // destination is ANDROID → check via adb shell
+        let safe = shellSafe(path)
+        let cmd  = "[ -e \(safe) ] && echo 1 || echo 0"
+        if let out = try? runadbCommand(arguments: ["shell", cmd]) {
+            return out.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+        }
+        return false
+    case .adrToMac:
+        // destination is MAC → check via FileManager
+        return FileManager.default.fileExists(atPath: path)
+    }
+}

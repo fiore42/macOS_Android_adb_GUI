@@ -498,17 +498,33 @@ struct ContentView: View {
             var totalSize: Int64 = 0
             var filePaths: [(source: String, destination: String)] = []
 
-            // Build the copy plan and compute total size
+            // Build the copy plan and compute total size (skip items that already exist)
             for fileID in selectedFiles {
-                if let file = sourceFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
-                    if errorVerbosity >= .debug {
-                        print("direction inside for loop \(direction)")
+                if let file = sourceFiles.first(where: { $0.id == fileID }),
+                   !file.isSpecialAction, file.name != ".." {
+
+                    let sourcePath      = (direction == .macToAdr ? macPath    : androidPath) + "/" + file.name
+                    let destinationPath = (direction == .macToAdr ? androidPath : macPath)    + "/" + file.name
+
+                    // If destination already has it → report error and SKIP
+                    if destinationExists(direction: direction, path: destinationPath) {
+                        DispatchQueue.main.async {
+                            GlobalState.shared.setErrorMessage(
+                                "\(LanguageManager.shared.localized("already_exists")): \(file.name)",
+                                verbosityLevel: .minimal
+                            )
+                        }
+                        continue
                     }
-                    let sourcePath = (direction == .macToAdr ? macPath : androidPath) + "/" + file.name
-                    let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
+
                     totalSize += getFileSize(direction: direction, path: sourcePath)
                     filePaths.append((source: sourcePath, destination: destinationPath))
                 }
+            }
+
+            
+            if errorVerbosity >= .debug {
+                print("totalSize \(totalSize)")
             }
 
             let startTime = Date()
@@ -525,6 +541,7 @@ struct ContentView: View {
                 // Sample how much is on destination now
                 let copiedNow: Int64 = filePaths.reduce(0) { sum, pair in
                     sum + getFileSize(
+                        // calculating the destination, hence swapping direction
                         direction: direction == .macToAdr ? .adrToMac : .macToAdr,
                         path: pair.destination
                     )
