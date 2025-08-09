@@ -528,8 +528,8 @@ struct ContentView: View {
             }
 
             let startTime = Date()
-            var lastSampleTime = startTime
-            var lastSampleBytes: Int64 = 0
+//            var lastSampleTime = startTime
+//            var lastSampleBytes: Int64 = 0
 
             let unit = unitForTotalBytes(totalSize) // use total size to choose KB/MB/GB for both sides
 
@@ -537,7 +537,8 @@ struct ContentView: View {
             progressTimer.schedule(deadline: .now() + 1, repeating: 2)
 
             // Capture only the values you need (all value types anyway)
-            progressTimer.setEventHandler { [totalSize, filePaths, direction] in
+            progressTimer.setEventHandler { [totalSize, filePaths, direction, startTime] in
+//            progressTimer.setEventHandler { [totalSize, filePaths, direction] in
                 // Sample how much is on destination now
                 let copiedNow: Int64 = filePaths.reduce(0) { sum, pair in
                     sum + getFileSize(
@@ -547,15 +548,24 @@ struct ContentView: View {
                     )
                 }
 
-                // Delta-based speed over the last 5s tick
-                let now = Date()
-                let bps = computeSpeed(prevBytes: lastSampleBytes,
-                                       prevTime: lastSampleTime,
-                                       currentBytes: copiedNow,
-                                       currentTime: now)
-                lastSampleBytes = copiedNow
-                lastSampleTime  = now
+//                // Delta-based speed over the last 5s tick
+//                let now = Date()
+//                let bps = computeSpeed(prevBytes: lastSampleBytes,
+//                                       prevTime: lastSampleTime,
+//                                       currentBytes: copiedNow,
+//                                       currentTime: now)
+//                lastSampleBytes = copiedNow
+//                lastSampleTime  = now
 
+                let now = Date()
+                let elapsed = max(0.001, now.timeIntervalSince(startTime))
+                let bps = Double(copiedNow) / elapsed
+                
+                if errorVerbosity >= .debug {
+                    print("elapsed: \(elapsed)s, copiedNow: \(copiedNow), totalSize: \(totalSize)")
+                }
+
+                
                 // Remaining + ETA using current tick speed
                 let remaining = max(0, totalSize - copiedNow)
                 let etaSeconds = bps > 0 ? Double(remaining) / bps : 0
