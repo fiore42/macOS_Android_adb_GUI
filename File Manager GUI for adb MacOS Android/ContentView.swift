@@ -45,6 +45,7 @@ struct ContentView: View {
     @State private var showLogViewer: Bool = false
     @State private var commitLogContent: String = ""
     @State private var copyEnabled = false
+    @State private var copyInProgress = false
     @State private var macPaneFocused: Bool = true
     @State private var androidPaneFocused: Bool = false
     
@@ -78,7 +79,7 @@ struct ContentView: View {
                                 file: $file,
                                 isFocused: macPaneFocused,
                                 selectedIDs: $selectedMacFiles,
-                                selectionEnabled: copyEnabled,
+                                selectionEnabled: copyEnabled && !copyInProgress,
                                 onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
                                 onSpecialAction: { loadMacFiles() },
                                 onNavigate: { navigateMacFolder(to: file) }
@@ -91,7 +92,7 @@ struct ContentView: View {
                                         file: $file,
                                         isFocused: macPaneFocused,
                                         selectedIDs: $selectedMacFiles,
-                                        selectionEnabled: copyEnabled,
+                                        selectionEnabled: copyEnabled && !copyInProgress,
                                         onFocusChange: { macPaneFocused = true; androidPaneFocused = false },
                                         onSpecialAction: { loadMacFiles() },
                                         onNavigate: { navigateMacFolder(to: file) }
@@ -119,7 +120,7 @@ struct ContentView: View {
                                     file: $file,
                                     isFocused: androidPaneFocused,
                                     selectedIDs: $selectedAndroidFiles,
-                                    selectionEnabled: copyEnabled,
+                                    selectionEnabled: copyEnabled && !copyInProgress,
                                     onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
                                     onSpecialAction: { loadAndroidFiles() },
                                     onNavigate: { navigateAndroidFolder(to: file) }
@@ -133,7 +134,7 @@ struct ContentView: View {
                                             file: $file,
                                             isFocused: androidPaneFocused,
                                             selectedIDs: $selectedAndroidFiles,
-                                            selectionEnabled: copyEnabled,
+                                            selectionEnabled: copyEnabled && !copyInProgress,
                                             onFocusChange: { macPaneFocused = false; androidPaneFocused = true },
                                             onSpecialAction: { loadAndroidFiles() },
                                             onNavigate: { navigateAndroidFolder(to: file) }
@@ -159,11 +160,13 @@ struct ContentView: View {
                         loadAndroidFiles()
                     }
                 }
+                .disabled(copyInProgress) // disable during copy
+
                 
                 Button(copyButtonText) {
                     copyFiles(direction: copyButtonDirection)
                 }
-                .disabled(!activePaneHasSelection)
+                .disabled(copyInProgress || !activePaneHasSelection) // disable during copy OR no selection
 
                 
             }
@@ -521,6 +524,8 @@ struct ContentView: View {
         if errorVerbosity >= .debug {
             print("selectedFiles \(selectedFiles)")
         }
+        
+        DispatchQueue.main.async { copyInProgress = true }
 
         DispatchQueue.global(qos: .userInitiated).async {
             var totalSize: Int64 = 0
@@ -596,6 +601,7 @@ struct ContentView: View {
                 loadAndroidFiles()
                 loadMacFiles()
 //                refresh()
+                copyInProgress = false
             }
         }
         
