@@ -21,6 +21,36 @@ enum ByteUnit: String {
     }
 }
 
+func getFileSize(direction: CopyDirection, path: String) -> Int64 {
+    switch direction {
+    case .macToAdr:
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+           let size = attrs[.size] as? Int64 {
+            return size
+        }
+        return 0
+    case .adrToMac:
+        let command = "du -sb \(shellSafe(path)) | cut -f1"
+        do {
+            let output = try runadbCommand(arguments: ["shell", command])
+            return Int64(output.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
+        } catch {
+            return 0
+        }
+    }
+}
+
+func shellSafe(_ path: String) -> String {
+    let escaped = path.replacingOccurrences(of: "'", with: "'\\''")
+    let quoted = "'\(escaped)'"
+    if quoted != path {
+        if errorVerbosity >= .verbose {
+            print("shellSafe: escaped input path for shell: \(path) → \(quoted)")
+        }
+    }
+    return quoted
+}
+
 func unitForTotalBytes(_ total: Int64) -> ByteUnit {
     if total < Int64(1 << 20) {         // < 1 MB
         return .KB
