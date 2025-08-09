@@ -533,41 +533,57 @@ struct ContentView: View {
                 }
             }
 
-            // Progress timer (fires every 5s on main queue)
             let startTime = Date()
+            var lastSampleTime = startTime
+            var lastSampleBytes: Int64 = 0
+
+            let unit = unitForTotalBytes(totalSize) // use total size to choose KB/MB/GB for both sides
+
             let progressTimer = DispatchSource.makeTimerSource(queue: .main)
             progressTimer.schedule(deadline: .now() + 1, repeating: 5)
 
-            progressTimer.setEventHandler {
-                // compute copied size by sampling destination
-                let copiedSize: Int64 = filePaths.reduce(0) { sum, pair in
-                    sum + getFileSize(direction: direction == .macToAdr ? .adrToMac : .macToAdr,
-                                      path: pair.destination)
+            // Capture only the values you need (all value types anyway)
+            progressTimer.setEventHandler { [totalSize, filePaths, direction] in
+                // Sample how much is on destination now
+                let copiedNow: Int64 = filePaths.reduce(0) { sum, pair in
+                    sum + getFileSize(
+                        direction: direction == .macToAdr ? .adrToMac : .macToAdr,
+                        path: pair.destination
+                    )
                 }
 
-                // avoid divide-by-zero
-                let elapsed = max(0.001, Date().timeIntervalSince(startTime))
-                let speed = copiedSize > 0 ? Double(copiedSize) / elapsed : 0
-                let remaining = max(0, totalSize - copiedSize)
-                let etaSeconds = speed > 0 ? Double(remaining) / speed : 0
+                // Delta-based speed over the last 5s tick
+                let now = Date()
+                let bps = computeSpeed(prevBytes: lastSampleBytes,
+                                       prevTime: lastSampleTime,
+                                       currentBytes: copiedNow,
+                                       currentTime: now)
+                lastSampleBytes = copiedNow
+                lastSampleTime  = now
 
-                let sizeUnit = totalSize < 1_000_000 ? "KB" : "MB"
-                let speedUnit = speed < 1_000_000 ? "KB/sec" : "MB/sec"
+                // Remaining + ETA using current tick speed
+                let remaining = max(0, totalSize - copiedNow)
+                let etaSeconds = bps > 0 ? Double(remaining) / bps : 0
 
-                let displayCopied = Double(copiedSize) / (totalSize < 1_000_000 ? 1_000 : 1_000_000)
-                let displayTotal  = Double(totalSize)  / (totalSize < 1_000_000 ? 1_000 : 1_000_000)
-                let displaySpeed  = speed / (speed < 1_000_000 ? 1_000 : 1_000_000)
+                // Format sizes with the SAME unit (based on total size)
+                let (copiedVal, unitLabel) = formatBytes(copiedNow, using: unit)
+                let (totalVal,  _)         = formatBytes(totalSize, using: unit)
 
+                // Format rate
+                let (speedVal, speedUnit)  = formatRate(bps)
+
+                // ETA mm:ss
                 let etaMin = Int(etaSeconds) / 60
                 let etaSec = Int(etaSeconds) % 60
 
                 GlobalState.shared.outputMessage = String(
                     format: "%.0f of %.0f%@ copied. ETA %d:%02d. %.1f %@",
-                    displayCopied, displayTotal, sizeUnit, etaMin, etaSec, displaySpeed, speedUnit
+                    copiedVal, totalVal, unitLabel, etaMin, etaSec, speedVal, speedUnit
                 )
             }
 
             progressTimer.resume()
+
 
             // Perform the copies, one by one
             for (sourcePath, destinationPath) in filePaths {
