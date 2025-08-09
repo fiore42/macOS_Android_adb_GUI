@@ -572,9 +572,10 @@ struct ContentView: View {
                 let etaSec = Int(etaSeconds) % 60
 
                 GlobalState.shared.outputMessage = String(
-                    format: "%.0f of %.0f%@ copied. ETA %d:%02d. %.1f %@",
+                    format: "%.2f of %.2f%@ copied. ETA %d:%02d. %.2f %@",
                     copiedVal, totalVal, unitLabel, etaMin, etaSec, speedVal, speedUnit
                 )
+
             }
 
             progressTimer.resume()
