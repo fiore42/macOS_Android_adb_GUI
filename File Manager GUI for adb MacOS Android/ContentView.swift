@@ -574,7 +574,10 @@ struct ContentView: View {
                 let fileName = URL(fileURLWithPath: sourcePath).lastPathComponent
 
                 DispatchQueue.main.async {
-                    GlobalState.shared.setOutputMessage ("\(LanguageManager.shared.localized("copying")) \(fileName)...", verbosityLevel: .verbose)
+                    
+                    // only for copying, update directly the variable so it doesn't get wiped after 5 secs
+                    GlobalState.shared.outputMessage = "\(LanguageManager.shared.localized("copying")) \(fileName)..."
+//                    GlobalState.shared.setOutputMessage ("\(LanguageManager.shared.localized("copying")) \(fileName)...", verbosityLevel: .verbose)
 
                 }
 
