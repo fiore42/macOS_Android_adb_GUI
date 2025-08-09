@@ -29,7 +29,10 @@ func getFileSize(direction: CopyDirection, path: String) -> Int64 {
     switch direction {
     case .macToAdr:
         if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
-           let size = attrs[.size] as? Int64 {
+            let size = attrs[.size] as? Int64 {
+            if errorVerbosity >= .debug {
+                print("getFileSize attrs \(attrs)")
+            }
             return size
         }
         return 0
