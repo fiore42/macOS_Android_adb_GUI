@@ -21,6 +21,36 @@ enum ByteUnit: String {
     }
 }
 
+struct ProcessResult {
+    let exitCode: Int32
+    let stdout: String
+    let stderr: String
+}
+
+@discardableResult
+func runProcess(executable: String, arguments: [String]) throws -> ProcessResult {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: executable)
+    process.arguments = arguments
+
+    let outPipe = Pipe()
+    let errPipe = Pipe()
+    process.standardOutput = outPipe
+    process.standardError  = errPipe
+
+    try process.run()
+    process.waitUntilExit()
+
+    let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
+    let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+
+    let stdout = String(data: outData, encoding: .utf8) ?? ""
+    let stderr = String(data: errData, encoding: .utf8) ?? ""
+
+    return ProcessResult(exitCode: process.terminationStatus, stdout: stdout, stderr: stderr)
+}
+
+
 func getFileSize(direction: CopyDirection, path: String) -> Int64 {
     if errorVerbosity >= .debug {
         print("getFileSize direction \(direction)")
@@ -28,14 +58,34 @@ func getFileSize(direction: CopyDirection, path: String) -> Int64 {
 
     switch direction {
     case .macToAdr:
-        if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
-            let size = attrs[.size] as? Int64 {
-            if errorVerbosity >= .debug {
-                print("getFileSize size \(attrs[.size] as? Int64)")
+        do {
+            // du -sk <path>  -> size in KB (summary)
+            let result = try runProcess(executable: "/usr/bin/env", arguments: ["du", "-sk", path])
+
+            if errorVerbosity >= .debug, !result.stderr.isEmpty {
+                print("du stderr: \(result.stderr)")
             }
-            return size
+
+            // Parse leading KB number
+            if let kbString = result.stdout
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .components(separatedBy: .whitespaces)
+                .first,
+               let kb = Int64(kbString) {
+
+                let bytes = kb * 1024
+                if errorVerbosity >= .debug {
+                    print("du reported size for \(path): \(bytes) bytes")
+                }
+                return bytes
+            }
+        } catch {
+            if errorVerbosity >= .minimal {
+                print("Error running du for \(path): \(error.localizedDescription)")
+            }
         }
         return 0
+
     case .adrToMac:
         let command = "du -sb \(shellSafe(path)) | cut -f1"
         do {
