@@ -501,6 +501,9 @@ struct ContentView: View {
             // Build the copy plan and compute total size
             for fileID in selectedFiles {
                 if let file = sourceFiles.first(where: { $0.id == fileID }), !file.isSpecialAction, file.name != ".." {
+                    if errorVerbosity >= .debug {
+                        print("direction inside for loop \(direction)")
+                    }
                     let sourcePath = (direction == .macToAdr ? macPath : androidPath) + "/" + file.name
                     let destinationPath = (direction == .macToAdr ? androidPath : macPath) + "/" + file.name
                     totalSize += getFileSize(direction: direction, path: sourcePath)
