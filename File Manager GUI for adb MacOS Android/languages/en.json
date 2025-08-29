@@ -8,7 +8,7 @@
     "adb_devices_ok_ready_to_load": "Device found. Loading Android files.",
     "adb_devices_nok_no_device_found": "NO device found",
     "adb_devices_nok_multiple_authorized_devices": "ERROR. Multiple authorized devices",
-    "adb_devices_nok_no_authorized_device_found": "NO authorized device found",
+    "adb_devices_nok_no_authorized_device_found": "Device found. Check the phone to authorize.",
     "adb_devices_nok_unknown_issue": "Unknown error",
     "refresh": "[ Refresh ]",
     "failed_load_mac_files": "Failed to load Mac files from",
